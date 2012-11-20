@@ -1,4 +1,4 @@
-ADDI $t1, $t1, $zero
 addi $t2, $t2, 14
-addi $t1, $t2, 14, $15
-nop
+ADDI $t7, $t7, 1025
+andi $t7, $t7, 0x0F
+ORI $t2, $t1, 0x1000

@@ -20,16 +20,17 @@ void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest
 */
 void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest)
 {
-	int i = 0;
 	uint32_t opcode = 0;
-	
-	for (; i < numeroParametros; i++)
-		minusculas(instruccion[i]);
 
 	if (obtenerInstruccion(instruccion, numeroParametros, &opcode))
 		printf("Instrucción: %s, Opcode: %x\n", instruccion[0], opcode);
 } 
 
+
+/*
+ * Función minusculas.
+ * Convierte a minúsculas la cadena pasada por parámetro
+*/
 void minusculas(char * string)
 {
 	for (; *string != '\0'; *string++ = tolower(*string));
@@ -82,6 +83,7 @@ void procesarArchivo(FILE * source, FILE * dest)
 
 	while(fgets(linea, MAX_LINEA, source) != NULL)
 	{
+		minusculas(linea);
 		vaciarTrozos(trozos, MAX_TROZOS);
 		numeroTrozos = trocearCadena(linea, trozos, MAX_TROZOS);
 

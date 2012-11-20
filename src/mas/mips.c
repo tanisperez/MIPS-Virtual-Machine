@@ -1,59 +1,58 @@
 #include <mips.h>
 #include <stdio.h>
 #include <stdint.h>
-
-unsigned char ensambladoOK = 1;
+#include <string.h>
 
 opcode_t listaInstrucciones[] = {
 	/* Instrucciones Tipo-R */
-	{"add",		0x00, 'R', 0x20}, //add $d, $s, $t
-	{"addu",	0x00, 'R', 0x21}, //addu $d, $s, $t
-	{"and",		0x00, 'R', 0x24}, //and $d, $s, $t
-	{"div",		0x00, 'R', 0x1A}, //div $s, $t
-	{"divu",	0x00, 'R', 0x1B}, //divu $s, $t
-	{"jr",		0x00, 'R', 0x08}, //jr $s
-	{"mfhi",	0x00, 'R', 0x10}, //mfhi $d
-	{"mflo",	0x00, 'R', 0x12}, //mflo $d
-	{"mult",	0x00, 'R', 0x18}, //mult $s, $t
-	{"multu",	0x00, 'R', 0x19}, //multu $s, $t
-	{"nop",		0x00, 'R', 0x00}, //nop
-	{"or",		0x00, 'R', 0x25}, //or $d, $s, $t
-	{"sll",		0x00, 'R', 0x00}, //sll $d, $t, h
-	{"sllv",	0x00, 'R', 0x04}, //sllv $d, $t, $s
-	{"slt",		0x00, 'R', 0x2A}, //slt $d, $s, $t
-	{"sltu",	0x00, 'R', 0x2B}, //sltu $d, $s, $t
-	{"sra",		0x00, 'R', 0x03}, //sra $d, $t, h
-	{"srl",		0x00, 'R', 0x02}, //srl $d, $t, h
-	{"srlv",	0x00, 'R', 0x06}, //srlv $d, $t, $s
-	{"sub",		0x00, 'R', 0x22}, //sub $d, $s, $t
-	{"subu",	0x00, 'R', 0x23}, //subu $d, $s, $t
-	{"xor",		0x00, 'R', 0x26}, //xor $d, $s, $t
-	{"syscall",	0x00, 'R', 0x0C}, //syscall
+	{"add",		0x00, 'R', 0x20, 3}, //add $d, $s, $t
+	{"addu",	0x00, 'R', 0x21, 3}, //addu $d, $s, $t
+	{"and",		0x00, 'R', 0x24, 3}, //and $d, $s, $t
+	{"div",		0x00, 'R', 0x1A, 2}, //div $s, $t
+	{"divu",	0x00, 'R', 0x1B, 2}, //divu $s, $t
+	{"jr",		0x00, 'R', 0x08, 1}, //jr $s
+	{"mfhi",	0x00, 'R', 0x10, 1}, //mfhi $d
+	{"mflo",	0x00, 'R', 0x12, 1}, //mflo $d
+	{"mult",	0x00, 'R', 0x18, 2}, //mult $s, $t
+	{"multu",	0x00, 'R', 0x19, 2}, //multu $s, $t
+	{"nop",		0x00, 'R', 0x00, 0}, //nop
+	{"or",		0x00, 'R', 0x25, 3}, //or $d, $s, $t
+	{"sll",		0x00, 'R', 0x00, 3}, //sll $d, $t, h
+	{"sllv",	0x00, 'R', 0x04, 3}, //sllv $d, $t, $s
+	{"slt",		0x00, 'R', 0x2A, 3}, //slt $d, $s, $t
+	{"sltu",	0x00, 'R', 0x2B, 3}, //sltu $d, $s, $t
+	{"sra",		0x00, 'R', 0x03, 3}, //sra $d, $t, h
+	{"srl",		0x00, 'R', 0x02, 3}, //srl $d, $t, h
+	{"srlv",	0x00, 'R', 0x06, 3}, //srlv $d, $t, $s
+	{"sub",		0x00, 'R', 0x22, 3}, //sub $d, $s, $t
+	{"subu",	0x00, 'R', 0x23, 3}, //subu $d, $s, $t
+	{"xor",		0x00, 'R', 0x26, 3}, //xor $d, $s, $t
+	{"syscall",	0x00, 'R', 0x0C, 0}, //syscall
 	/* Instrucciones Tipo-I */
-	{"addi", 	0x08, 'I', 0x00}, //addi $t, $s, imm
-	{"addiu", 	0x09, 'I', 0x00}, //addiu $t, $s, imm
-	{"andi",	0x0C, 'I', 0x00}, //andi $t, $s, imm
-	{"beq",		0x04, 'I', 0x00}, //beq $s, $t, offset
-	{"bgez",	0x01, 'I', 0x01}, //bgez $s, offset
-	{"bgezal",	0x01, 'I', 0x11}, //bgezal $s, offset
-	{"bgtz",	0x07, 'I', 0x00}, //bgtz $s, offset
-	{"blez",	0x06, 'I', 0x00}, //blez $s, offset
-	{"bltz",	0x01, 'I', 0x00}, //bltz $s, offset
-	{"bltzal",	0x01, 'I', 0x10}, //bltzal $s, offset
-	{"bne",		0x05, 'I', 0x00}, //bne $s, $t, offset
-	{"lb",		0x20, 'I', 0x00}, //lb $t, offset($s)
-	{"lui",		0x0F, 'I', 0x00}, //lui $t, imm
-	{"lw",		0x23, 'I', 0x00}, //lw $t, offset($s)
-	{"ori",		0x0D, 'I', 0x00}, //ori $t, $s, imm
-	{"sb",		0x28, 'I', 0x00}, //sb $t, offset($s)
-	{"slti",	0x0A, 'I', 0x00}, //slti $t, $s, imm
-	{"sltiu",	0x0B, 'I', 0x00}, //sltiu $t, $s, imm
-	{"sw",		0x2B, 'I', 0x00}, //sw $t, offset($s)
-	{"xori",	0x0E, 'I', 0x00}, //xori $t, $s, imm
+	{"addi", 	0x08, 'I', 0x00, 3}, //addi $t, $s, imm ----->
+	{"addiu", 	0x09, 'I', 0x00, 3}, //addiu $t, $s, imm ----->
+	{"andi",	0x0C, 'I', 0x00, 3}, //andi $t, $s, imm ----->
+	{"beq",		0x04, 'I', 0x00, 3}, //beq $s, $t, offset ----->
+	{"bgez",	0x01, 'I', 0x01, 2}, //bgez $s, offset
+	{"bgezal",	0x01, 'I', 0x11, 2}, //bgezal $s, offset
+	{"bgtz",	0x07, 'I', 0x00, 2}, //bgtz $s, offset
+	{"blez",	0x06, 'I', 0x00, 2}, //blez $s, offset
+	{"bltz",	0x01, 'I', 0x00, 2}, //bltz $s, offset
+	{"bltzal",	0x01, 'I', 0x10, 2}, //bltzal $s, offset
+	{"bne",		0x05, 'I', 0x00, 3}, //bne $s, $t, offset ----->
+	{"lb",		0x20, 'I', 0x00, 2}, //lb $t, offset($s)
+	{"lui",		0x0F, 'I', 0x00, 2}, //lui $t, imm
+	{"lw",		0x23, 'I', 0x00, 2}, //lw $t, offset($s)
+	{"ori",		0x0D, 'I', 0x00, 3}, //ori $t, $s, imm ----->
+	{"sb",		0x28, 'I', 0x00, 2}, //sb $t, offset($s)
+	{"slti",	0x0A, 'I', 0x00, 3}, //slti $t, $s, imm ----->
+	{"sltiu",	0x0B, 'I', 0x00, 3}, //sltiu $t, $s, imm ----->
+	{"sw",		0x2B, 'I', 0x00, 2}, //sw $t, offset($s)
+	{"xori",	0x0E, 'I', 0x00, 3}, //xori $t, $s, imm ----->
 	/* Instrucciones Tipo-J */
-	{"j",		0x02, 'J', 0x00}, //j target
-	{"jal",		0x03, 'J', 0x00}, //jal target
-	{NULL, 		0x3F, '\0', 0x00},
+	{"j",		0x02, 'J', 0x00, 1}, //j target
+	{"jal",		0x03, 'J', 0x00, 1}, //jal target
+	{NULL, 		0x3F, '\0', 0x00, 0},
 	};
 
 register_t listaRegistros[] = {
@@ -92,9 +91,31 @@ register_t listaRegistros[] = {
 	{NULL, 		NULL, 	0}
 	};
 
+int strToUINT16(char * cadena, uint16_t * inmediato);
 opcode_t obtenerOpcode(char * nombre);
 register_t obtenerRegistro(char * nombre);
-uint32_t obtenerIntruccionI(char * instruccion[], int numeroParametros);
+int obtenerIntruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
+
+
+/*
+ * Función strToUINT16.
+ * Convierte una cadena de caracteres en un número de 16 bits sin signo.
+ * <= Una cadena de caracteres.
+ * <= La dirección de memoria de un número de 16 bits sin signo, donde
+ * se va a almacenar el número convertido.
+ * => Devuelve 1 si tiene éxito y 0 si no lo tiene.
+*/
+int strToUINT16(char * cadena, uint16_t * inmediato)
+{
+	int temp = 0;
+	if (sscanf(cadena, "%d", &temp) == 1)
+	{
+		*inmediato = (uint16_t)temp;
+		return 1;
+	}
+	else
+		return 0;
+}
 
 /*
  * Función obtenerOpcode.
@@ -106,7 +127,7 @@ uint32_t obtenerIntruccionI(char * instruccion[], int numeroParametros);
 opcode_t obtenerOpcode(char * nombre)
 {
 	int i = 0;
-	opcode_t opcode = {NULL, 0x3F, '\0'};
+	opcode_t opcode = {NULL, 0x3F, '\0', 0x00, 0};
 
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 		if (!strcmp(nombre, listaInstrucciones[i].operacion))
@@ -143,7 +164,7 @@ register_t obtenerRegistro(char * nombre)
 
 uint32_t obtenerInstruccionR(char * instruccion[])
 {
-
+	
 
 }
 
@@ -151,42 +172,65 @@ uint32_t obtenerInstruccionR(char * instruccion[])
  * Devuelve una instrucción de tipo I a partir
  * del array de parámetros que recibe.
 */
-uint32_t obtenerIntruccionI(char * instruccion[], int numeroParametros)
+int obtenerIntruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
 {
+	int resultado = 0;
+	register_t rt, rs;
 	uint32_t opcodeI = 0;
 	uint16_t inmediato = 0;
-	uint8_t rs = 0, rt = 0;
-
-	register_t registro = obtenerRegistro(instruccion[1]);
 	
-	ensambladoOK = 0;
-	if (registro.nombre != NULL)
+	switch (codopt.codopt)
 	{
-		rt = registro.codigo;
-		registro = obtenerRegistro(instruccion[2]);
-		if (registro.nombre != NULL)
-		{
-			rs = registro.codigo;
+		//Operación lb
+		case 0x20:
+			break;
+		//Operación lw
+		case 0x23:
+			break;
+		//Operación sb
+		case 0x28:
+			break;
+		//Operación sw
+		case 0x2B:
+			break;
 
-			if (!strcmp(instruccion[3], "$zero"))
-				strcpy(instruccion[3], "0");
-
-			/* Comprobar la longitud en el sscanf */
-			if (sscanf(instruccion[3], "%d", &inmediato) == 1)
+		default:
+			switch (numeroParametros - 1)
 			{
-				opcodeI |= (rs << 21) | (rt << 16) | inmediato;
-				ensambladoOK = 1;
+				case 3:
+					rt = obtenerRegistro(instruccion[1]);
+					if (rt.nombre != NULL)
+					{
+						rs = obtenerRegistro(instruccion[2]);
+						if (rs.nombre != NULL)
+						{
+							/* Si se cumple la condición significa que son instrucciones de salto:
+								beq o bne. */
+							if (codopt.codopt == 0x04 || codopt.codopt == 0x05)
+							{
+
+							}
+							else
+							{
+								if (strToUINT16(instruccion[3], &inmediato))
+								{
+									*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+													| (rt.codigo << 16) | inmediato;
+									resultado = 1;
+								}
+								else
+									printf("Error! La cadena \"%s\" no es un número válido de 16 bits!\n", instruccion[3]);
+							}
+						}
+						else
+							printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[2]);
+					}
+					else
+						printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[1]);
 			}
-			else
-				printf("Error! \"%s\" no es un número de 16 bits válido.\n", instruccion[3]);
-		}
-		else
-			printf("Error! El registro \"%s\" no existe.\n", instruccion[2]);
 	}
-	else
-		printf("Error! El registro \"%s\" no existe.\n", instruccion[1]);
-	
-	return opcodeI;
+
+	return resultado;
 }
 
 
@@ -220,8 +264,7 @@ int obtenerInstruccion(char * instruccion[], int numeroParametros, uint32_t * op
 				break;
 
 			case 'I':
-				*opcode += obtenerIntruccionI(instruccion, numeroParametros);
-				if (ensambladoOK)
+				if (obtenerIntruccionI(instruccion, numeroParametros, codopt, opcode))
 					result = 1;
 				break;
 

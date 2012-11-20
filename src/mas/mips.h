@@ -27,6 +27,7 @@ typedef struct opcode{
 	uint8_t codopt;
 	char tipo;
 	uint8_t codfunc;
+	uint8_t numeroParametros;
 } opcode_t;
 
 typedef struct reg{
