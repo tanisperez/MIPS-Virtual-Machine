@@ -23,7 +23,7 @@ void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest
 	uint32_t opcode = 0;
 
 	if (obtenerInstruccion(instruccion, numeroParametros, &opcode))
-		printf("Instrucción: %s, Opcode: %x\n", instruccion[0], opcode);
+		printf("Instrucción: %s, Opcode: %.8x\n", instruccion[0], opcode);
 } 
 
 

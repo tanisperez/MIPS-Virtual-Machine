@@ -92,8 +92,10 @@ register_t listaRegistros[] = {
 	};
 
 int strToUINT16(char * cadena, uint16_t * inmediato);
+int strToUINT8(char * cadena, uint8_t * desplazamiento);
 opcode_t obtenerOpcode(char * nombre);
 register_t obtenerRegistro(char * nombre);
+int obtenerIntruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
 int obtenerIntruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
 
 
@@ -111,6 +113,26 @@ int strToUINT16(char * cadena, uint16_t * inmediato)
 	if (sscanf(cadena, "%d", &temp) == 1)
 	{
 		*inmediato = (uint16_t)temp;
+		return 1;
+	}
+	else
+		return 0;
+}
+
+/*
+ * Función strToUINT8.
+ * Convierte una cadena de caracteres en un número de 8 bits sin signo.
+ * <= Una cadena de caracteres.
+ * <= La dirección de memoria de un número de 8 bits sin signo, donde
+ * se va a almacenar el número convertido.
+ * => Devuelve 1 si tiene éxito y 0 si no lo tiene.
+*/
+int strToUINT8(char * cadena, uint8_t * desplazamiento)
+{
+	int temp = 0;
+	if (sscanf(cadena, "%d", &temp) == 1)
+	{
+		*desplazamiento = (uint8_t)temp;
 		return 1;
 	}
 	else
@@ -162,11 +184,143 @@ register_t obtenerRegistro(char * nombre)
 	return registro;
 }
 
-uint32_t obtenerInstruccionR(char * instruccion[])
+int obtenerIntruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
 {
-	
+	int resultado = 0;
+	register_t rt, rs, rd;
+	uint8_t desplazamiento = 0;
 
+	switch (numeroParametros - 1)
+	{
+	case 0:
+		//Si es la instrucción syscall
+		if (codopt.codfunc == 0x0C)
+		{
+			*opcode = codopt.codfunc;
+			resultado = 1;
+		}
+		else
+			if (codopt.codfunc == 0x00) //nop
+			{
+				*opcode = 0;
+				resultado = 1;
+			}	
+		break;
+	case 1:
+		rd = obtenerRegistro(instruccion[1]);
+		if (rd.nombre != NULL)
+		{
+			if (codopt.codfunc == 0x08)
+			{
+				rs.codigo = rd.codigo;
+				rd.codigo = 0x00;
+			}
+			else
+				rs.codigo = 0x00;
+
+			rt.codigo = 0x00;
+			*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+					| (rt.codigo << 16) | (rd.codigo << 11) | (codopt.codfunc);
+			resultado = 1;
+		}
+		else
+			printf("Error! El registro \"%s\" no es un identificador válido de registro!\n", instruccion[1]);
+
+		break;
+	case 2:
+			rs = obtenerRegistro(instruccion[1]);
+			if (rs.nombre != NULL)
+			{
+				rt = obtenerRegistro(instruccion[2]);
+				if (rt.nombre != NULL)
+				{
+						rd.codigo = 0x00;
+						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+									| (rt.codigo << 16) | (rd.codigo << 11) | (codopt.codfunc);
+						resultado = 1;
+				}
+				else
+					printf("Error! El registro \"%s\" no es un identificador válido de registro!\n", instruccion[2]);
+			}
+			else
+				printf("Error! El registro \"%s\" no es un identificador válido de registro!\n", instruccion[1]);
+		break;
+
+	case 3:
+		// Si es la instrucción sll, srl o sra
+		if (codopt.codfunc == 0x00 || codopt.codfunc == 0x03 || codopt.codfunc == 0x02)
+		{
+			rd = obtenerRegistro(instruccion[1]);
+			if (rd.nombre != NULL)
+			{
+				rt = obtenerRegistro(instruccion[2]);
+				if (rt.nombre != NULL)
+				{
+					if (strToUINT8(instruccion[3], &desplazamiento))
+					{
+						rs.codigo = 0x00;
+						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+									| (rt.codigo << 16) | (rd.codigo << 11) 
+									| (desplazamiento << 6) |(codopt.codfunc);
+						resultado = 1;
+					}
+					else
+						printf("Error! La cadena \"%s\" no es un número válido de 8 bits!\n", instruccion[3]);
+				}
+				else
+					printf("Error! El registro \"%s\" no es un identificador válido de registro!\n", instruccion[2]);
+			}
+			else
+				printf("Error! El registro \"%s\" no es un identificador válido de registro!\n", instruccion[1]);	
+		}
+		else
+		{
+			rd = obtenerRegistro(instruccion[1]);
+			if (rd.nombre != NULL)
+			{
+				rs = obtenerRegistro(instruccion[2]);
+				if (rs.nombre != NULL)
+				{
+					rt = obtenerRegistro(instruccion[3]);
+					if (rt.nombre != NULL)
+					{
+						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+												| (rt.codigo << 16) | (rd.codigo << 11) | (codopt.codfunc);
+						resultado = 1;
+					}
+					else
+						printf("Error! El registro \"%s\" no es un identificador válido de registro!\n", instruccion[3]);
+				}
+				else
+					printf("Error! El registro \"%s\" no es un identificador válido de registro!\n", instruccion[2]);	
+			}
+			else
+				printf("Error! El registro \"%s\" no es un identificador válido de registro!\n", instruccion[1]);
+		}
+		break;
+
+	}
+
+
+	return resultado;
 }
+
+/*
+ * Algoritmo para los saltos.
+ * A medida que obtengo las instrucciones las voy guardando en memoria.
+ * Para las instrucciones que sean de salto, hago lo siguiente:
+
+   - Encontramos una etiqueta dentro de una instruccion, pues la añadimos a la lista con el nombre,
+		la direccion relativa (o efectiva, no lo se aun) en blanco y la direccion de la instruccion que la llama (otra lista enlazada). Es decir, si es la
+		segunda instrucción, ponemos un 4.
+
+   - Si encontramos una etiqueta, la buscamos en la lista y si existe modificamos la entrada poniendo la direccion relativa de salto, si no creamos la entrada en la lista.
+
+	Al finalizar de procesar todas las lineas del codigo fuente, revisamos la lista de etiquetas y en cada etiqueta,
+	hay una lista de instrucciones que necesitan la direccion de esa etiqueta, vamos a esa instruccion y ponemos
+	el valor de salto.
+
+*/
 
 /*
  * Devuelve una instrucción de tipo I a partir
@@ -181,53 +335,53 @@ int obtenerIntruccionI(char * instruccion[], int numeroParametros, opcode_t codo
 	
 	switch (codopt.codopt)
 	{
-		//Operación lb
-		case 0x20:
-			break;
-		//Operación lw
-		case 0x23:
-			break;
-		//Operación sb
-		case 0x28:
-			break;
-		//Operación sw
-		case 0x2B:
-			break;
+	//Operación lb
+	case 0x20:
+		break;
+	//Operación lw
+	case 0x23:
+		break;
+	//Operación sb
+	case 0x28:
+		break;
+	//Operación sw
+	case 0x2B:
+		break;
 
-		default:
-			switch (numeroParametros - 1)
+	default:
+		switch (numeroParametros - 1)
+		{
+		case 3:
+			rt = obtenerRegistro(instruccion[1]);
+			if (rt.nombre != NULL)
 			{
-				case 3:
-					rt = obtenerRegistro(instruccion[1]);
-					if (rt.nombre != NULL)
+				rs = obtenerRegistro(instruccion[2]);
+				if (rs.nombre != NULL)
+				{
+					/* Si se cumple la condición significa que son instrucciones de salto:
+						beq o bne. */
+					if (codopt.codopt == 0x04 || codopt.codopt == 0x05)
 					{
-						rs = obtenerRegistro(instruccion[2]);
-						if (rs.nombre != NULL)
-						{
-							/* Si se cumple la condición significa que son instrucciones de salto:
-								beq o bne. */
-							if (codopt.codopt == 0x04 || codopt.codopt == 0x05)
-							{
 
-							}
-							else
-							{
-								if (strToUINT16(instruccion[3], &inmediato))
-								{
-									*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
-													| (rt.codigo << 16) | inmediato;
-									resultado = 1;
-								}
-								else
-									printf("Error! La cadena \"%s\" no es un número válido de 16 bits!\n", instruccion[3]);
-							}
-						}
-						else
-							printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[2]);
 					}
 					else
-						printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[1]);
+					{
+						if (strToUINT16(instruccion[3], &inmediato))
+						{
+							*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+											| (rt.codigo << 16) | inmediato;
+							resultado = 1;
+						}
+						else
+							printf("Error! La cadena \"%s\" no es un número válido de 16 bits!\n", instruccion[3]);
+					}
+				}
+				else
+					printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[2]);
 			}
+			else
+				printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[1]);
+		}
 	}
 
 	return resultado;
@@ -256,11 +410,11 @@ int obtenerInstruccion(char * instruccion[], int numeroParametros, uint32_t * op
 	opcode_t codopt = obtenerOpcode(instruccion[0]);
 	if (codopt.operacion != NULL)
 	{
-		*opcode = codopt.codopt << 26;
-
 		switch (codopt.tipo)
 		{
 			case 'R':
+				if (obtenerIntruccionR(instruccion, numeroParametros, codopt, opcode))
+					result = 1;
 				break;
 
 			case 'I':
