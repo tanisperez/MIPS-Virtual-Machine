@@ -1,9 +1,8 @@
 CC=gcc
 PARAMS=-O2 -I./
 
-all: mas.o ensamblador.o listaVariables.o mips.o
-	$(CC) $(PARAMS) mas.o ensamblador.o listaVariables.o mips.o -o mas
-	./mas prog1.asm -o prog1.bin
+all: mas.o ensamblador.o listaVariables.o mips.o saltos.o
+	$(CC) $(PARAMS) mas.o ensamblador.o listaVariables.o mips.o saltos.o -o ../../bin/mas
 
 mas.o: mas.c
 	$(CC) $(PARAMS) -c mas.c
@@ -16,6 +15,9 @@ listaVariables.o: listaVariables.c listaVariables.h
 
 mips.o: mips.c mips.h
 	$(CC) $(PARAMS) -c mips.c
+
+saltos.o: saltos.c saltos.h
+	$(CC) $(PARAMS) -c saltos.c
 
 clean:
 	rm *.o

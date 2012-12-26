@@ -2,12 +2,13 @@
 #include <string.h>
 #include <ensamblador.h>
 #include <listaVariables.h>
+#include <definiciones.h>
 #include <stdint.h>
 
 int main(int argc, char * argv[])
 {
 	uint32_t dato;
-	printf("Mips ASsembler version 0.01\n\n");
+	printf("Mips ASsembler version %.2f\n\n", MAS_VER);
 	
 	if (argc > 1)
 	{

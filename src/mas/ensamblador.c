@@ -23,7 +23,10 @@ void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest
 	uint32_t opcode = 0;
 
 	if (obtenerInstruccion(instruccion, numeroParametros, &opcode))
+	{
 		printf("Instrucción: %s, Opcode: %.8x\n", instruccion[0], opcode);
+		fwrite(&opcode, sizeof(uint32_t), 1, dest);
+	}
 } 
 
 
@@ -108,6 +111,7 @@ void ensamblarArchivo(char * archivo, char * destino)
 	{
 		if (dest != NULL)
 		{
+			//buscarDireccionesSalto(source);
 			procesarArchivo(source, dest);
 
 			fclose(dest);
