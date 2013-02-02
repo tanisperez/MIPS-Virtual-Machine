@@ -21,6 +21,3 @@ saltos.o: saltos.c saltos.h
 
 clean:
 	rm *.o
-
-copy: mas
-	cp mas ../../bin/

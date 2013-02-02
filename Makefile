@@ -1,6 +1,7 @@
 all:
 	$(MAKE) --directory=src/mas/
 	$(MAKE) --directory=src/mips/
+	@echo BUILD SUCCESSFULL!
 
 clean:
 	$(MAKE) clean --directory=src/mas/
