@@ -1,16 +1,20 @@
 #include <vm.h>
+#include <alu.h>
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
 
+extern cpu_t cpu; //En alu.c
+
 /* Definición de los prototipos de las funciones privadas en vm.c */
-void visualizarCPUInfo(cpu_t * cpu_info);
-void execute(cpu_t * cpu_info);
-void interpretarInstruccion(cpu_t * cpu_info, uint32_t opcode);
+void visualizarCPUInfo();
+void execute();
+void interpretarInstruccion(uint32_t opcode);
+
 
 opcode_t listaInstrucciones[] = {
 	/* Instrucciones Tipo-R */
-	{"add",		0x00, 'R', 0x20, NULL}, //add $d, $s, $t
+	{"add",		0x00, 'R', 0x20, add}, //add $d, $s, $t
 	{"addu",	0x00, 'R', 0x21, NULL}, //addu $d, $s, $t
 	{"and",		0x00, 'R', 0x24, NULL}, //and $d, $s, $t
 	{"div",		0x00, 'R', 0x1A, NULL}, //div $s, $t
@@ -34,7 +38,7 @@ opcode_t listaInstrucciones[] = {
 	{"xor",		0x00, 'R', 0x26, NULL}, //xor $d, $s, $t
 	{"syscall",	0x00, 'R', 0x0C, NULL}, //syscall
 	/* Instrucciones Tipo-I */
-	{"addi", 	0x08, 'I', 0x00, NULL}, //addi $t, $s, imm
+	{"addi", 	0x08, 'I', 0x00, addi}, //addi $t, $s, imm
 	{"addiu", 	0x09, 'I', 0x00, NULL}, //addiu $t, $s, imm
 	{"andi",	0x0C, 'I', 0x00, NULL}, //andi $t, $s, imm
 	{"beq",		0x04, 'I', 0x00, NULL}, //beq $s, $t, offset
@@ -60,58 +64,130 @@ opcode_t listaInstrucciones[] = {
 	{NULL, 		0x3F, '\0', 0x00, NULL},
 	};
 
+register_t listaRegistros[] = {
+	{"$zero", 	0,	&cpu.registros.zero},
+	{"$at", 	1,	&cpu.registros.at},
+	{"$v0", 	2,	&cpu.registros.v0},
+	{"$v1", 	3,	&cpu.registros.v1},
+	{"$a0", 	4,	&cpu.registros.a0},
+	{"$a1", 	5,	&cpu.registros.a1},
+	{"$a2", 	6,	&cpu.registros.a2},
+	{"$a3", 	7,	&cpu.registros.a3},
+	{"$t0", 	8,	&cpu.registros.t0},
+	{"$t1", 	9,	&cpu.registros.t1},
+	{"$t2", 	10,	&cpu.registros.t2},
+	{"$t3", 	11,	&cpu.registros.t3},
+	{"$t4", 	12,	&cpu.registros.t4},
+	{"$t5", 	13,	&cpu.registros.t5},
+	{"$t6", 	14,	&cpu.registros.t6},
+	{"$t7", 	15,	&cpu.registros.t7},
+	{"$s0", 	16,	&cpu.registros.s0},
+	{"$s1", 	17,	&cpu.registros.s1},
+	{"$s2", 	18,	&cpu.registros.s2},
+	{"$s3", 	19,	&cpu.registros.s3},
+	{"$s4", 	20, &cpu.registros.s4},
+	{"$s5", 	21,	&cpu.registros.s5},
+	{"$s6", 	22, &cpu.registros.s6},
+	{"$s7", 	23, &cpu.registros.s7},
+	{"$t8", 	24, &cpu.registros.t8},
+	{"$t9", 	25, &cpu.registros.t9},
+	{"$k0", 	26, &cpu.registros.k0},
+	{"$k1", 	27,	&cpu.registros.k1},
+	{"$gp", 	28, &cpu.registros.gp},
+	{"$sp", 	29,	&cpu.registros.sp},
+	{"$fp", 	30, &cpu.registros.fp},
+	{"$ra", 	31,	&cpu.registros.ra},
+	{NULL, 		0,	NULL}
+	};
 
-void visualizarCPUInfo(cpu_t * cpu_info)
+
+void visualizarCPUInfo()
 {
 	printf("\nMIPS Virtual Machine\n");
-	printf("v0: %.8x v1: %.8x\n", cpu_info->registros.v0, cpu_info->registros.v1);
-	printf("a0: %.8x a1: %.8x a2: %.8x a3: %.8x\n", cpu_info->registros.a0, 
-		cpu_info->registros.a1, cpu_info->registros.a2, cpu_info->registros.a3);
+	printf("v0: %.8x v1: %.8x\n", cpu.registros.v0, cpu.registros.v1);
+	printf("a0: %.8x a1: %.8x a2: %.8x a3: %.8x\n", cpu.registros.a0, 
+		cpu.registros.a1, cpu.registros.a2, cpu.registros.a3);
 	printf("t0: %.8x t1: %.8x t2: %.8x t3: %.8x\nt4: %.8x t5: %.8x t6: %.8x t7: %.8x\nt8: %.8x t9: %.8x\n",
-		cpu_info->registros.t0, cpu_info->registros.t1, cpu_info->registros.t2, cpu_info->registros.t3,
-		cpu_info->registros.t4, cpu_info->registros.t5, cpu_info->registros.t6, cpu_info->registros.t7,
-		cpu_info->registros.t8, cpu_info->registros.t9);
+		cpu.registros.t0, cpu.registros.t1, cpu.registros.t2, cpu.registros.t3,
+		cpu.registros.t4, cpu.registros.t5, cpu.registros.t6, cpu.registros.t7,
+		cpu.registros.t8, cpu.registros.t9);
 	printf("s0: %.8x s1: %.8x s2: %.8x s3: %.8x\ns4: %.8x s5: %.8x s6: %.8x s7: %.8x\n",
-		cpu_info->registros.s0, cpu_info->registros.s1, cpu_info->registros.s2, cpu_info->registros.s3,
-		cpu_info->registros.s4, cpu_info->registros.s5, cpu_info->registros.s6, cpu_info->registros.s7);
-	printf("k0: %.8x k1: %.8x\n", cpu_info->registros.k0, cpu_info->registros.k1);
-	printf("gp: %.8x sp: %.8x fp: %.8x ra: %.8x\n", cpu_info->registros.gp, cpu_info->registros.sp,
-		cpu_info->registros.fp, cpu_info->registros.ra);
+		cpu.registros.s0, cpu.registros.s1, cpu.registros.s2, cpu.registros.s3,
+		cpu.registros.s4, cpu.registros.s5, cpu.registros.s6, cpu.registros.s7);
+	printf("k0: %.8x k1: %.8x\n", cpu.registros.k0, cpu.registros.k1);
+	printf("gp: %.8x sp: %.8x fp: %.8x ra: %.8x\n", cpu.registros.gp, cpu.registros.sp,
+		cpu.registros.fp, cpu.registros.ra);
 }
 
 
-void execute(cpu_t * cpu_info)
+void execute()
 {
 	uint32_t opcode = 0;
 
-	while (cpu_info->PC < cpu_info->program_size)
+	while (cpu.PC < cpu.program_size && cpu.PC >= 0)
 	{
-		opcode = cpu_info->byteCode[cpu_info->PC >> 2]; //Dividimos entre 4
-		printf("Opcode: %.8x\n", (int)opcode);
-		interpretarInstruccion(cpu_info, opcode);
+		opcode = cpu.byteCode[cpu.PC >> 2]; //Dividimos entre 4
+		printf("Opcode: %.8x\n", opcode);
+		interpretarInstruccion(opcode);
 
-		cpu_info->PC += 4;
+		if (cpu.shouldAdvance)
+			cpu.PC += 4;
+		else
+			cpu.shouldAdvance = cpu.shouldAdvance = 1;
 	}
 
-	visualizarCPUInfo(cpu_info);
+	visualizarCPUInfo(cpu);
 }
 
-void interpretarInstruccion(cpu_t * cpu_info, uint32_t opcode)
+void interpretarInstruccion(uint32_t opcode)
 {
 	unsigned int i = 0;
 	uint8_t codopt = (uint8_t)(opcode >> 26);
-	uint8_t codfunc = (uint8_t)(opcode && 0x0000003F);
+	uint8_t codfunc = (uint8_t)(opcode & 0x0000003F);
+	int32_t * rs = NULL;
+	int32_t * rt = NULL;
+	int32_t * rd = NULL;
+	uint8_t shamt = 0, temp = 0;
+	int16_t offset = 0;
+	uint32_t direction = 0;
 
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{
 		if ((codopt == 0x00 && listaInstrucciones[i].codfunc == codfunc)
 			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == 0x00)
-			|| (listaInstrucciones[i].codopt = 0x01 && listaInstrucciones[i].codfunc == codfunc))
+			|| (listaInstrucciones[i].codopt == 0x01 && listaInstrucciones[i].codfunc == codfunc))
 		{
 			if (listaInstrucciones[i].funcion == NULL)
-				printf("Función %s sin implementar!\n", listaInstrucciones[i].operacion);
+				printf("Función %s sin implementar o desconocida!\n", listaInstrucciones[i].operacion);
 			else
-				listaInstrucciones[i].funcion(cpu_info, opcode);
+			{
+				switch (listaInstrucciones[i].tipo)
+				{
+					case 'R':
+						temp = (uint8_t)((opcode & 0x03E00000) >> 21);
+						rs = listaRegistros[temp].reg_pointer;
+						temp = (uint8_t)((opcode & 0x001F0000) >> 16);
+						rt = listaRegistros[temp].reg_pointer;
+						temp = (uint8_t)((opcode & 0x0000F800) >> 11);
+						rd = listaRegistros[temp].reg_pointer;
+						shamt = (uint8_t)((opcode & 0x000007C0) >> 6);
+						listaInstrucciones[i].funcion(rs, rt, rd, shamt, offset, direction);
+						break;
+					case 'I':
+						temp = (uint8_t)((opcode & 0x03E00000) >> 21);
+						rs = listaRegistros[temp].reg_pointer;
+						temp = (uint8_t)((opcode & 0x001F0000) >> 16);
+						rt = listaRegistros[temp].reg_pointer;
+						offset = (int16_t)(opcode & 0x0000FFFF);
+						listaInstrucciones[i].funcion(rs, rt, rd, shamt, offset, direction);
+						break;
+					case 'J':
+						direction = (uint32_t)(opcode & 0x03FFFFFF);
+						listaInstrucciones[i].funcion(rs, rt, rd, shamt, offset, direction);
+						break;
+				}
+				//listaInstrucciones[i].funcion(opcode);
+			}
 			break;
 		}
 	}
@@ -122,26 +198,26 @@ void interpretarArchivo(char * archivo)
 {
 	FILE * source = NULL;
 	size_t itemsRead = 0;
-	cpu_t cpu_info;
 
 	if ((source = fopen(archivo, "r")) != NULL)
 	{
 		fseek(source, 0L, SEEK_END); //Nos situamos al final del archivo
-		cpu_info.program_size = ftell(source); //Obtenemos la posición del fichero, que es el tamaño del archivo
+		cpu.program_size = ftell(source); //Obtenemos la posición del fichero, que es el tamaño del archivo
 
-		cpu_info.byteCode = (uint32_t *) malloc(cpu_info.program_size / 4);
-		if (cpu_info.byteCode != NULL)
+		cpu.byteCode = (uint32_t *) malloc(cpu.program_size / 4);
+		if (cpu.byteCode != NULL)
 		{
 			rewind(source); //Nos situamos al principio del archivo
-			itemsRead = fread(cpu_info.byteCode, 4, cpu_info.program_size / 4, source); //¿Aplicar un algoritmo voraz?
-			if (itemsRead == (cpu_info.program_size / 4))
+			itemsRead = fread(cpu.byteCode, 4, cpu.program_size / 4, source); //¿Aplicar un algoritmo voraz?
+			if (itemsRead == (cpu.program_size / 4))
 			{
-				cpu_info.PC = 0;
-				memset(&cpu_info.registros, 0, sizeof(registers_t));
+				cpu.PC = 0;
+				cpu.shouldAdvance = 1;
+				memset(&cpu.registros, 0, sizeof(registers_t));
 
-				execute(&cpu_info);
+				execute();
 
-				free(cpu_info.byteCode);
+				free(cpu.byteCode);
 			}
 			else
 				printf("Error de lectura en el fichero \"%s\"\n", archivo);
