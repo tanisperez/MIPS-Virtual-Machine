@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define REG_COUNT 32
+
 /*
  * http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html
  *

@@ -11,25 +11,30 @@ void visualizarCPUInfo();
 void execute();
 void interpretarInstruccion(uint32_t opcode);
 
+/*
+ * Revisar los desplazamientos lógicos y aritméticos.
+ * When shifting an unsigned value, the >> operator 
+ * in C is a logical shift. When shifting a signed value, the >> operator is an arithmetic shift.
+*/
 
 opcode_t listaInstrucciones[] = {
 	/* Instrucciones Tipo-R */
 	{"add",		0x00, 'R', 0x20, add}, //add $d, $s, $t
-	{"addu",	0x00, 'R', 0x21, NULL}, //addu $d, $s, $t
-	{"and",		0x00, 'R', 0x24, NULL}, //and $d, $s, $t
-	{"div",		0x00, 'R', 0x1A, NULL}, //div $s, $t
-	{"divu",	0x00, 'R', 0x1B, NULL}, //divu $s, $t
+	{"addu",	0x00, 'R', 0x21, addu}, //addu $d, $s, $t
+	{"and",		0x00, 'R', 0x24, and}, //and $d, $s, $t
+	{"div",		0x00, 'R', 0x1A, div}, //div $s, $t
+	{"divu",	0x00, 'R', 0x1B, divu}, //divu $s, $t
 	{"jr",		0x00, 'R', 0x08, NULL}, //jr $s
-	{"mfhi",	0x00, 'R', 0x10, NULL}, //mfhi $d
-	{"mflo",	0x00, 'R', 0x12, NULL}, //mflo $d
-	{"mult",	0x00, 'R', 0x18, NULL}, //mult $s, $t
-	{"multu",	0x00, 'R', 0x19, NULL}, //multu $s, $t
-	{"nop",		0x00, 'R', 0x00, NULL}, //nop
-	{"or",		0x00, 'R', 0x25, NULL}, //or $d, $s, $t
-	{"sll",		0x00, 'R', 0x00, NULL}, //sll $d, $t, h
-	{"sllv",	0x00, 'R', 0x04, NULL}, //sllv $d, $t, $s
-	{"slt",		0x00, 'R', 0x2A, NULL}, //slt $d, $s, $t
-	{"sltu",	0x00, 'R', 0x2B, NULL}, //sltu $d, $s, $t
+	{"mfhi",	0x00, 'R', 0x10, mfhi}, //mfhi $d
+	{"mflo",	0x00, 'R', 0x12, mflo}, //mflo $d
+	{"mult",	0x00, 'R', 0x18, mult}, //mult $s, $t
+	{"multu",	0x00, 'R', 0x19, multu}, //multu $s, $t
+	{"nop",		0x00, 'R', 0x00, nop}, //nop
+	{"or",		0x00, 'R', 0x25, or}, //or $d, $s, $t
+	{"sll",		0x00, 'R', 0x00, sll}, //sll $d, $t, h
+	{"sllv",	0x00, 'R', 0x04, sllv}, //sllv $d, $t, $s
+	{"slt",		0x00, 'R', 0x2A, slt}, //slt $d, $s, $t
+	{"sltu",	0x00, 'R', 0x2B, sltu}, //sltu $d, $s, $t
 	{"sra",		0x00, 'R', 0x03, NULL}, //sra $d, $t, h
 	{"srl",		0x00, 'R', 0x02, NULL}, //srl $d, $t, h
 	{"srlv",	0x00, 'R', 0x06, NULL}, //srlv $d, $t, $s
@@ -39,8 +44,8 @@ opcode_t listaInstrucciones[] = {
 	{"syscall",	0x00, 'R', 0x0C, NULL}, //syscall
 	/* Instrucciones Tipo-I */
 	{"addi", 	0x08, 'I', 0x00, addi}, //addi $t, $s, imm
-	{"addiu", 	0x09, 'I', 0x00, NULL}, //addiu $t, $s, imm
-	{"andi",	0x0C, 'I', 0x00, NULL}, //andi $t, $s, imm
+	{"addiu", 	0x09, 'I', 0x00, addiu}, //addiu $t, $s, imm
+	{"andi",	0x0C, 'I', 0x00, andi}, //andi $t, $s, imm
 	{"beq",		0x04, 'I', 0x00, NULL}, //beq $s, $t, offset
 	{"bgez",	0x01, 'I', 0x01, NULL}, //bgez $s, offset
 	{"bgezal",	0x01, 'I', 0x11, NULL}, //bgezal $s, offset
@@ -52,10 +57,10 @@ opcode_t listaInstrucciones[] = {
 	{"lb",		0x20, 'I', 0x00, NULL}, //lb $t, offset($s)
 	{"lui",		0x0F, 'I', 0x00, NULL}, //lui $t, imm
 	{"lw",		0x23, 'I', 0x00, NULL}, //lw $t, offset($s)
-	{"ori",		0x0D, 'I', 0x00, NULL}, //ori $t, $s, imm
+	{"ori",		0x0D, 'I', 0x00, ori}, //ori $t, $s, imm
 	{"sb",		0x28, 'I', 0x00, NULL}, //sb $t, offset($s)
-	{"slti",	0x0A, 'I', 0x00, NULL}, //slti $t, $s, imm
-	{"sltiu",	0x0B, 'I', 0x00, NULL}, //sltiu $t, $s, imm
+	{"slti",	0x0A, 'I', 0x00, slti}, //slti $t, $s, imm
+	{"sltiu",	0x0B, 'I', 0x00, sltiu}, //sltiu $t, $s, imm
 	{"sw",		0x2B, 'I', 0x00, NULL}, //sw $t, offset($s)
 	{"xori",	0x0E, 'I', 0x00, NULL}, //xori $t, $s, imm
 	/* Instrucciones Tipo-J */
@@ -64,7 +69,7 @@ opcode_t listaInstrucciones[] = {
 	{NULL, 		0x3F, '\0', 0x00, NULL},
 	};
 
-register_t listaRegistros[] = {
+register_t listaRegistros[REG_COUNT] = {
 	{"$zero", 	0,	&cpu.registros.zero},
 	{"$at", 	1,	&cpu.registros.at},
 	{"$v0", 	2,	&cpu.registros.v0},
@@ -96,8 +101,7 @@ register_t listaRegistros[] = {
 	{"$gp", 	28, &cpu.registros.gp},
 	{"$sp", 	29,	&cpu.registros.sp},
 	{"$fp", 	30, &cpu.registros.fp},
-	{"$ra", 	31,	&cpu.registros.ra},
-	{NULL, 		0,	NULL}
+	{"$ra", 	31,	&cpu.registros.ra}
 	};
 
 
@@ -117,6 +121,7 @@ void visualizarCPUInfo()
 	printf("k0: %.8x k1: %.8x\n", cpu.registros.k0, cpu.registros.k1);
 	printf("gp: %.8x sp: %.8x fp: %.8x ra: %.8x\n", cpu.registros.gp, cpu.registros.sp,
 		cpu.registros.fp, cpu.registros.ra);
+	printf("L0: %.8x HI: %.8x\n", cpu.registros.LO, cpu.registros.HI);
 }
 
 
@@ -133,7 +138,7 @@ void execute()
 		if (cpu.shouldAdvance)
 			cpu.PC += 4;
 		else
-			cpu.shouldAdvance = cpu.shouldAdvance = 1;
+			cpu.shouldAdvance =  1;
 	}
 
 	visualizarCPUInfo(cpu);
@@ -186,7 +191,6 @@ void interpretarInstruccion(uint32_t opcode)
 						listaInstrucciones[i].funcion(rs, rt, rd, shamt, offset, direction);
 						break;
 				}
-				//listaInstrucciones[i].funcion(opcode);
 			}
 			break;
 		}
