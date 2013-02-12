@@ -15,6 +15,9 @@ void interpretarInstruccion(uint32_t opcode);
  * Revisar los desplazamientos lógicos y aritméticos.
  * When shifting an unsigned value, the >> operator 
  * in C is a logical shift. When shifting a signed value, the >> operator is an arithmetic shift.
+
+ * Pseudoinstrucciones:
+ * http://en.wikibooks.org/wiki/MIPS_Assembly/Pseudoinstructions
 */
 
 opcode_t listaInstrucciones[] = {
@@ -29,7 +32,7 @@ opcode_t listaInstrucciones[] = {
 	{"mflo",	0x00, 'R', 0x12, mflo}, //mflo $d
 	{"mult",	0x00, 'R', 0x18, mult}, //mult $s, $t
 	{"multu",	0x00, 'R', 0x19, multu}, //multu $s, $t
-	{"nop",		0x00, 'R', 0x00, nop}, //nop
+	//{"nop",		0x00, 'R', 0x00, nop}, //nop
 	{"or",		0x00, 'R', 0x25, or}, //or $d, $s, $t
 	{"sll",		0x00, 'R', 0x00, sll}, //sll $d, $t, h
 	{"sllv",	0x00, 'R', 0x04, sllv}, //sllv $d, $t, $s
@@ -40,8 +43,8 @@ opcode_t listaInstrucciones[] = {
 	{"srlv",	0x00, 'R', 0x06, NULL}, //srlv $d, $t, $s
 	{"sub",		0x00, 'R', 0x22, NULL}, //sub $d, $s, $t
 	{"subu",	0x00, 'R', 0x23, NULL}, //subu $d, $s, $t
-	{"xor",		0x00, 'R', 0x26, NULL}, //xor $d, $s, $t
-	{"syscall",	0x00, 'R', 0x0C, NULL}, //syscall
+	{"xor",		0x00, 'R', 0x26, xor}, //xor $d, $s, $t
+	{"syscall",	0x00, 'R', 0x0C, syscall}, //syscall
 	/* Instrucciones Tipo-I */
 	{"addi", 	0x08, 'I', 0x00, addi}, //addi $t, $s, imm
 	{"addiu", 	0x09, 'I', 0x00, addiu}, //addiu $t, $s, imm
@@ -158,8 +161,10 @@ void interpretarInstruccion(uint32_t opcode)
 
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{
-		if ((codopt == 0x00 && listaInstrucciones[i].codfunc == codfunc)
-			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == 0x00)
+		if ((listaInstrucciones[i].codopt == codopt && 
+			listaInstrucciones[i].codfunc == codfunc && listaInstrucciones[i].tipo == 'R')
+			|| (listaInstrucciones[i].codopt == codopt && 
+					listaInstrucciones[i].codfunc == 0x00 && listaInstrucciones[i].tipo == 'I')
 			|| (listaInstrucciones[i].codopt == 0x01 && listaInstrucciones[i].codfunc == codfunc))
 		{
 			if (listaInstrucciones[i].funcion == NULL)
@@ -208,7 +213,7 @@ void interpretarArchivo(char * archivo)
 		fseek(source, 0L, SEEK_END); //Nos situamos al final del archivo
 		cpu.program_size = ftell(source); //Obtenemos la posición del fichero, que es el tamaño del archivo
 
-		cpu.byteCode = (uint32_t *) malloc(cpu.program_size / 4);
+		cpu.byteCode = (uint32_t *) malloc((cpu.program_size / 4) * sizeof(uint32_t));
 		if (cpu.byteCode != NULL)
 		{
 			rewind(source); //Nos situamos al principio del archivo

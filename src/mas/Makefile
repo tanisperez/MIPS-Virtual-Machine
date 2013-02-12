@@ -19,5 +19,8 @@ mips.o: mips.c mips.h
 saltos.o: saltos.c saltos.h
 	$(CC) $(PARAMS) -c saltos.c
 
+debug:
+	$(CC) $(PARAMS) -g mas.c ensamblador.c listaVariables.c mips.c saltos.c -o ../../bin/mas
+
 clean:
 	rm *.o
