@@ -413,24 +413,13 @@ int obtenerInstruccion(char * instruccion[], int numeroParametros, uint32_t * op
 		switch (codopt.tipo)
 		{
 			case 'R':
-				if (obtenerIntruccionR(instruccion, numeroParametros, codopt, opcode))
-					result = 1;
-				break;
-
+				return obtenerIntruccionR(instruccion, numeroParametros, codopt, opcode);
 			case 'I':
-				if (obtenerIntruccionI(instruccion, numeroParametros, codopt, opcode))
-					result = 1;
-				break;
-
+				return obtenerIntruccionI(instruccion, numeroParametros, codopt, opcode);
 			case 'J':
-				break;
+				return 0;
 		}		
 	}
-	else 
-		printf("Warning! La instrucción \"%s\" no está implementada! La instrucción es ignorada.\n", 
-			instruccion[0]);
-
-	return result;
 }
 
 

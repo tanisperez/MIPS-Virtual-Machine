@@ -9,7 +9,8 @@ void procesarArchivo(FILE * source, FILE * dest);
 void vaciarTrozos(char * trozos[], int maxTrozos);
 unsigned int trocearCadena(char * cadena, char * trozos[], int MaxTrozos);
 void minusculas(char * string);
-void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest);
+void quitarComentarios(char * string);
+void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest, int numeroLinea);
 
 
 /*
@@ -18,15 +19,18 @@ void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest
  * de forma binaria.
  *
 */
-void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest)
+void escribirInstruccion(char * instruccion[], int numeroParametros, FILE * dest, int numeroLinea)
 {
 	uint32_t opcode = 0;
+	uint32_t * buffer = NULL; //Buffer de instrucciones a escribir
 
 	if (obtenerInstruccion(instruccion, numeroParametros, &opcode))
 	{
 		printf("Instrucción: %s, Opcode: %.8x\n", instruccion[0], opcode);
 		fwrite(&opcode, sizeof(uint32_t), 1, dest);
 	}
+	else
+		printf("Línea %d: Error! Sintaxis incorrecta!\n", numeroLinea);
 } 
 
 
@@ -39,6 +43,23 @@ void minusculas(char * string)
 	for (; *string != '\0'; *string++ = tolower(*string));
 }
 
+
+/*
+ * Función quitarComentarios.
+ * Recibe una cadena de texto y reemplaza los "#" por caracteres
+ * nulos, para que signifique que la cadena termina ahí y no
+ * lea el comentario el ensamblador.
+*/
+void quitarComentarios(char * string)
+{
+	while (*string != '\0')
+	{
+		if (*string == '#')
+			*string = '\0';
+		else
+			string++;
+	}
+}
 
 /*
  * Función trocearCadena.
@@ -82,18 +103,24 @@ void procesarArchivo(FILE * source, FILE * dest)
 {
 	static char linea[MAX_LINEA];
 	char * trozos[MAX_TROZOS];
-	unsigned int numeroTrozos = 0;
+	unsigned int numeroTrozos = 0, numLinea = 1;
 
 	while(fgets(linea, MAX_LINEA, source) != NULL)
 	{
+		quitarComentarios(linea);
 		minusculas(linea);
+
 		vaciarTrozos(trozos, MAX_TROZOS);
 		numeroTrozos = trocearCadena(linea, trozos, MAX_TROZOS);
 
-		if (numeroTrozos > 0 && numeroTrozos <= TROZOS_UTILES)
-			escribirInstruccion(trozos, numeroTrozos, dest);
-		else
-			printf("\"%s\" no es una instrucción válida!\n", linea);
+		if (numeroTrozos > 0)
+		{
+			if (numeroTrozos <= TROZOS_UTILES)
+				escribirInstruccion(trozos, numeroTrozos, dest, numLinea);
+			else
+				printf("Línea %d: Error! \"%s\" no es una instrucción válida!\n", numLinea, linea);
+		}
+		numLinea++;
 	}
 }
 
