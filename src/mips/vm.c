@@ -20,6 +20,9 @@ void interpretarInstruccion(uint32_t opcode);
  * http://en.wikibooks.org/wiki/MIPS_Assembly/Pseudoinstructions
 */
 
+/* Lista de códigos de operación, separados por su nombre,
+   código de operación, tipo de instrucción, código de función y
+   el puntero a una función en C que realizará la operación deseada. */
 opcode_t listaInstrucciones[] = {
 	/* Instrucciones Tipo-R */
 	{"add",		0x00, 'R', 0x20, add}, //add $d, $s, $t
@@ -72,6 +75,8 @@ opcode_t listaInstrucciones[] = {
 	{NULL, 		0x3F, '\0', 0x00, NULL},
 	};
 
+/* Lista de registros con su nombre, su número de registro(son 32)
+   y el puntero al registro de la CPU al que hacen referencia. */
 register_t listaRegistros[REG_COUNT] = {
 	{"$zero", 	0,	&cpu.registros.zero},
 	{"$at", 	1,	&cpu.registros.at},
@@ -95,19 +100,23 @@ register_t listaRegistros[REG_COUNT] = {
 	{"$s3", 	19,	&cpu.registros.s3},
 	{"$s4", 	20, &cpu.registros.s4},
 	{"$s5", 	21,	&cpu.registros.s5},
-	{"$s6", 	22, &cpu.registros.s6},
-	{"$s7", 	23, &cpu.registros.s7},
-	{"$t8", 	24, &cpu.registros.t8},
-	{"$t9", 	25, &cpu.registros.t9},
-	{"$k0", 	26, &cpu.registros.k0},
+	{"$s6", 	22,	&cpu.registros.s6},
+	{"$s7", 	23,	&cpu.registros.s7},
+	{"$t8", 	24,	&cpu.registros.t8},
+	{"$t9", 	25,	&cpu.registros.t9},
+	{"$k0", 	26,	&cpu.registros.k0},
 	{"$k1", 	27,	&cpu.registros.k1},
-	{"$gp", 	28, &cpu.registros.gp},
+	{"$gp", 	28,	&cpu.registros.gp},
 	{"$sp", 	29,	&cpu.registros.sp},
-	{"$fp", 	30, &cpu.registros.fp},
+	{"$fp", 	30,	&cpu.registros.fp},
 	{"$ra", 	31,	&cpu.registros.ra}
 	};
 
 
+/*
+ * Función visualizarCPUInfo.
+ * Muestra el estado de los registros de la CPU en formato hexadecimal.
+*/
 void visualizarCPUInfo()
 {
 	printf("\nMIPS Virtual Machine\n");
@@ -128,11 +137,17 @@ void visualizarCPUInfo()
 }
 
 
+/*
+ * Función execute.
+ * Ejecuta el código del programa ya cargado en memoria interpretando cada instrucción. El programa
+ * termina cuando se llama explícitamente la syscall número 10 o el PC (Program Counter) llega al
+ * final del programa.
+*/
 void execute()
 {
 	uint32_t opcode = 0;
 
-	while (cpu.PC < cpu.program_size && cpu.PC >= 0)
+	while (cpu.PC < cpu.program_size && cpu.syscallTermination == 0)
 	{
 		opcode = cpu.byteCode[cpu.PC >> 2]; //Dividimos entre 4
 		printf("Opcode: %.8x\n", opcode);
@@ -147,6 +162,27 @@ void execute()
 	visualizarCPUInfo(cpu);
 }
 
+
+/*
+ * Función liberarPrograma.
+ * Libera la memoria del programa y se encarga de salir del bucle de la
+ * función execute. Esta función sólo debe ser exportada para usarse en la
+ * syscall número 10.
+*/
+void liberarPrograma()
+{
+	free(cpu.byteCode);
+
+	cpu.syscallTermination = 1;
+}
+
+
+/*
+ * Fúnción interpretarInstruccion.
+ * Recibe un código de operación de 32 bits, comprueba en la lista de instrucciones
+ * si es una instrucción conocida e implementada, a continuación averigua que
+ * registros de la CPU están afectados por la operación y decide que función realizar.
+*/
 void interpretarInstruccion(uint32_t opcode)
 {
 	unsigned int i = 0;
@@ -203,6 +239,11 @@ void interpretarInstruccion(uint32_t opcode)
 
 }
 
+
+/*
+ * Función interpretarArchivo.
+ * Se encarga de leer un archivo, cargarlo en memoria e intentar ejecutarlo.
+*/
 void interpretarArchivo(char * archivo)
 {
 	FILE * source = NULL;
@@ -222,11 +263,12 @@ void interpretarArchivo(char * archivo)
 			{
 				cpu.PC = 0;
 				cpu.shouldAdvance = 1;
+				cpu.syscallTermination = 0;
 				memset(&cpu.registros, 0, sizeof(registers_t));
 
 				execute();
 
-				free(cpu.byteCode);
+				liberarPrograma();
 			}
 			else
 				printf("Error de lectura en el fichero \"%s\"\n", archivo);

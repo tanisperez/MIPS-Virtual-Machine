@@ -16,11 +16,15 @@ typedef struct registers{
 	int32_t LO, HI; //Regitros no referenciables directamente
 } registers_t;
 
+
 typedef struct cpu{
 	uint32_t * byteCode;
+
 	uint32_t program_size;
 	uint32_t PC;
+
 	uint8_t shouldAdvance;
+	uint8_t syscallTermination;
 
 	registers_t registros;
 }cpu_t;

@@ -121,9 +121,6 @@ void syscall(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t of
 		case SYS_READ_CHAR:
 			read_char(&cpu.registros.v0);
 			break;
-		case SYS_EXIT2:
-			exit2(cpu.byteCode, cpu.registros.a0);
-			break;
 		default:
 			printf("syscall %d no implementada!\n", cpu.registros.v0);
 			break;

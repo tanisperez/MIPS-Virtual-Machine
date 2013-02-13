@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern void liberarPrograma();
 
 /* Syscall 1 */
 void print_integer(uint32_t i)
@@ -29,8 +30,7 @@ void read_integer(uint32_t * i)
 /* Syscall 10 */
 void exit1(uint32_t * byteCode)
 {
-	free(byteCode);
-	exit(EXIT_SUCCESS);
+	liberarPrograma();
 }
 
 
@@ -44,12 +44,4 @@ void print_char(uint32_t c)
 void read_char(uint32_t * c)
 {
 	*c = getchar();
-}
-
-
-/* Syscall 17 */
-void exit2(uint32_t * byteCode, uint32_t sigkill)
-{
-	free(byteCode);
-	exit(sigkill);
 }

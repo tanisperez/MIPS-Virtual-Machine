@@ -36,6 +36,8 @@ typedef struct reg{
 	int32_t * reg_pointer;
 } register_t;
 
+
+/* Funciones públicas */
 void interpretarArchivo(char * archivo);
 
 #endif
