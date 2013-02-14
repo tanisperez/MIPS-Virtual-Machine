@@ -8,6 +8,8 @@
 #define MAX_TROZOS 10
 #define TROZOS_UTILES 4
 
+#define MAX_FALLOS 7
+
 void ensamblarArchivo(char * archivo, char * destino);
 
 

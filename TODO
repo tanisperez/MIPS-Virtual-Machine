@@ -1,0 +1,2 @@
+- Corregir buffer_realloc(), falla al reservar más memoria para
+la estructura buffer_t.
