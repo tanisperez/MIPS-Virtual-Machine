@@ -1,26 +1,43 @@
 #include <ensamblador.h>
 #include <stdio.h>
-#include <ctype.h>
-#include <string.h>
+#include <cadenas.h>
 #include <mips.h>
 #include <programBuffer.h>
+#include <saltos.h>
 
 /* Funciones privadas */
-void generarBinario(buffer_t * b, char * destino);
-void procesarArchivo(FILE * source, char * destino);
-void vaciarTrozos(char * trozos[], int maxTrozos);
-unsigned int trocearCadena(char * cadena, char * trozos[], int MaxTrozos);
-void minusculas(char * string);
-void quitarComentarios(char * string);
-int escribirInstruccion(char * instruccion[], int numeroParametros, int numeroLinea, buffer_t * b);
+void generarBinario(char * destino);
+int escribirInstruccionBuffer(char * instruccion[], int numeroParametros, int numeroLinea, buffer_t * b);
+void procesarCodigoFuente(FILE * source, char * destino);
+
+/* Variables globales */
+saltos_list_t listaEtiquetasSalto;
+buffer_t progBuffer;
+
+/*
+ * Función generarBinario.
+ * Recibe un buffer y la ruta destino y se encarga
+ * de crear ese fichero con el contenido del buffer.
+*/
+void generarBinario(char * destino)
+{
+	FILE * dest = fopen(destino, "w+");
+	if (dest != NULL)
+	{
+		fwrite(progBuffer.buffer, sizeof(uint32_t),progBuffer.bufferUsado, dest);
+		fclose(dest);
+	}
+	else
+		printf("No se pudo crear \"%s\"!\n", destino);
+}
 
 
 /*
- * Función escribirInstruccion.
+ * Función escribirInstruccionBuffer.
  * Recibe una instrucción con sus parámetros y un buffer donde se va a almacenar la instrucción
  * procesada.
 */
-int escribirInstruccion(char * instruccion[], int numeroParametros, int numeroLinea, buffer_t * b)
+int escribirInstruccionBuffer(char * instruccion[], int numeroParametros, int numeroLinea, buffer_t * b)
 {
 	uint32_t opcode = 0;
 
@@ -36,132 +53,66 @@ int escribirInstruccion(char * instruccion[], int numeroParametros, int numeroLi
 		printf("Línea %d: Error! Sintaxis incorrecta!\n", numeroLinea);
 		return 0;
 	}
-} 
-
-
-/*
- * Función minusculas.
- * Convierte a minúsculas la cadena pasada por parámetro
-*/
-void minusculas(char * string)
-{
-	for (; *string != '\0'; *string++ = tolower(*string));
 }
 
 
 /*
- * Función quitarComentarios.
- * Recibe una cadena de texto y reemplaza los "#" por caracteres
- * nulos, para que signifique que la cadena termina ahí y no
- * lea el comentario el ensamblador.
-*/
-void quitarComentarios(char * string)
-{
-	while (*string != '\0')
-	{
-		if (*string == '#')
-			*string = '\0';
-		else
-			string++;
-	}
-}
-
-
-/*
- * Función trocearCadena.
- * Recibe por parámetro una cadena de texto. Trocea la cadena, quitando
- * los espacios, comas y saltos de línea y guarda los pedazos en trozos[] según
- * un número máximo de maxTrozos.
- * Devuelve el número de trozos en los que se partió la cadena.
-*/
-unsigned int trocearCadena(char * cadena, char * trozos[], int maxTrozos)
-{
-	int i = 1;
-
-	if ((trozos[0] = strtok(cadena," ,\t\n")) == NULL)
-		return 0;
-	
-	while (i < maxTrozos && (trozos[i] = strtok(NULL," ,\t\n")) != NULL)
-		i++;
-
-	return i;
-}
-
-
-/*
- * Función vaciarTrozos.
- * Recibe un array de punteros a caracteres y un número máximo de trozos.
- * Establece a NULL cada trozo.
-*/
-void vaciarTrozos(char * trozos[], int maxTrozos)
-{
-	int i = 0;
-	for (; i < maxTrozos; i++)
-		trozos[i] = NULL;
-}
-
-
-/*
- * Función generarBinario.
- * Recibe un buffer y la ruta destino y se encarga
- * de crear ese fichero con el contenido del buffer.
-*/
-void generarBinario(buffer_t * b, char * destino)
-{
-	FILE * dest = fopen(destino, "w+");
-	if (dest != NULL)
-	{
-		fwrite(b->buffer, sizeof(uint32_t), b->bufferUsado, dest);
-		fclose(dest);
-	}
-	else
-		printf("No se pudo crear \"%s\"!\n", destino);
-}
-
-
-/*
- * Función procesarArchivo.
+ * Función procesarCodigoFuente.
  * Recibe por parámetro del handler del fichero código fuente
 */
-void procesarArchivo(FILE * source, char * destino)
+void procesarCodigoFuente(FILE * source, char * destino)
 {
-	buffer_t b;
 	static char linea[MAX_LINEA];
 	char * trozos[MAX_TROZOS];
 	unsigned int numeroTrozos = 0, numLinea = 1;
 	unsigned int ok = 1, numFallos = 0;
 
-	buffer_init(&b);
+	buffer_init(&progBuffer);
+	listaSaltos_crear(&listaEtiquetasSalto);
 
 	while(fgets(linea, MAX_LINEA, source) != NULL)
 	{
+		quitarSaltoLinea(linea);
 		quitarComentarios(linea);
 		minusculas(linea);
-
-		vaciarTrozos(trozos, MAX_TROZOS);
-		numeroTrozos = trocearCadena(linea, trozos, MAX_TROZOS);
-
-		if (numeroTrozos > 0)
+		
+		if (esSalto(linea))
 		{
-			if (numeroTrozos <= TROZOS_UTILES)
+			//añadir linea
+			listaSaltos_insertar(&listaEtiquetasSalto, linea, progBuffer.bufferUsado << 2);
+			//printf("Salto! en %.8x\n", b.bufferUsado << 2);
+		}
+		else
+		{
+			vaciarTrozos(trozos, MAX_TROZOS);
+			numeroTrozos = trocearCadena(linea, trozos, MAX_TROZOS);
+
+			if (numeroTrozos > 0)
 			{
-				if (!(escribirInstruccion(trozos, numeroTrozos, numLinea, &b)))
+				if (numeroTrozos <= TROZOS_UTILES)
 				{
-					ok = 0;
-					if ((numFallos++) == MAX_FALLOS)
-						break;
+					if (!(escribirInstruccionBuffer(trozos, numeroTrozos, numLinea, &progBuffer)))
+					{
+						ok = 0;
+						if ((numFallos++) == MAX_FALLOS)
+							break;
+					}
 				}
+				else
+					printf("Línea %d: Error! \"%s\" no es una instrucción válida!\n", numLinea, linea);
 			}
-			else
-				printf("Línea %d: Error! \"%s\" no es una instrucción válida!\n", numLinea, linea);
 		}
 		numLinea++;
+		
 	}
 
 	if (ok)
-		generarBinario(&b, destino);	
+		generarBinario(destino);	
+	
+	listaSaltos_mostrar(&listaEtiquetasSalto);
 
-	buffer_free(&b);
+	listaSaltos_vaciar(&listaEtiquetasSalto);
+	buffer_free(&progBuffer);
 }
 
 
@@ -175,7 +126,7 @@ void ensamblarArchivo(char * archivo, char * destino)
 	FILE * source = fopen(archivo, "r");
 	if (source != NULL)
 	{
-		procesarArchivo(source, destino);
+		procesarCodigoFuente(source, destino);
 
 		fclose(source);
 	}

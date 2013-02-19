@@ -1,5 +1,6 @@
 #include <programBuffer.h>
 #include <stdio.h>
+#include <string.h>
 #include <malloc.h>
 
 /* Funciones privadas */
@@ -19,7 +20,7 @@ void buffer_init(buffer_t * b)
 	b->buffer = NULL;
 	b->tamBuffer = 0;
 	b->bufferUsado = 0;
-	b->buffer = (uint32_t *) realloc(b->buffer, DEFAULT_SIZE * sizeof(uint32_t));
+	b->buffer = (uint32_t *) malloc(DEFAULT_SIZE * sizeof(uint32_t));
 
 	if (b->buffer != NULL)
 		b->tamBuffer = DEFAULT_SIZE;
@@ -36,10 +37,17 @@ void buffer_init(buffer_t * b)
 */
 void buffer_realloc(buffer_t * b)
 {
-	b->tamBuffer += DEFAULT_SIZE;
-	b->buffer = (uint32_t *) realloc(b->buffer, DEFAULT_SIZE * sizeof(uint32_t));
+	uint32_t * temp = NULL;
 
-	if (b->buffer == NULL)
+	temp = (uint32_t *) malloc((b->tamBuffer + DEFAULT_SIZE) * sizeof(uint32_t));
+	if (temp != NULL)
+	{
+		memcpy(temp, b->buffer, b->tamBuffer * sizeof(uint32_t));
+		free(b->buffer);
+		b->tamBuffer += DEFAULT_SIZE;
+		b->buffer = temp;
+	}
+	else
 		printf("Error! No se pudo reservar memoria con realloc en buffer_realloc()!\n");
 }
 

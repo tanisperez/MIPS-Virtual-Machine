@@ -1,2 +1,5 @@
-- Corregir buffer_realloc(), falla al reservar más memoria para
-la estructura buffer_t.
+- Capturar la señar Ctrl^C en el programa mips
+
+
+- La lista de saltos conocida y la lista de instrucciones con saltos desconocidos se van a almacenar
+  en el archivo ensamblador.c y se van a acceder de forma externa desde mips.c

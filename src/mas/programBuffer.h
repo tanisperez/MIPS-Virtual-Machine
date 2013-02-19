@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+/* 512 opcodes * sizeof(uint32_t) = 2KB */
 #define DEFAULT_SIZE	512
 
 typedef struct buffer_ {

@@ -1,7 +1,7 @@
 #include <mips.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
+#include <cadenas.h>
 
 opcode_t listaInstrucciones[] = {
 	/* Instrucciones Tipo-R */
@@ -91,53 +91,12 @@ register_t listaRegistros[] = {
 	{NULL, 		NULL, 	0}
 	};
 
-int strToUINT16(char * cadena, uint16_t * inmediato);
-int strToUINT8(char * cadena, uint8_t * desplazamiento);
 opcode_t obtenerOpcode(char * nombre);
 register_t obtenerRegistro(char * nombre);
-int obtenerIntruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
-int obtenerIntruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
+int obtenerInstruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
+int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
+int obtenerInstruccionJ(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
 
-
-/*
- * Función strToUINT16.
- * Convierte una cadena de caracteres en un número de 16 bits sin signo.
- * <= Una cadena de caracteres.
- * <= La dirección de memoria de un número de 16 bits sin signo, donde
- * se va a almacenar el número convertido.
- * => Devuelve 1 si tiene éxito y 0 si no lo tiene.
-*/
-int strToUINT16(char * cadena, uint16_t * inmediato)
-{
-	int temp = 0;
-	if (sscanf(cadena, "%d", &temp) == 1)
-	{
-		*inmediato = (uint16_t)temp;
-		return 1;
-	}
-	else
-		return 0;
-}
-
-/*
- * Función strToUINT8.
- * Convierte una cadena de caracteres en un número de 8 bits sin signo.
- * <= Una cadena de caracteres.
- * <= La dirección de memoria de un número de 8 bits sin signo, donde
- * se va a almacenar el número convertido.
- * => Devuelve 1 si tiene éxito y 0 si no lo tiene.
-*/
-int strToUINT8(char * cadena, uint8_t * desplazamiento)
-{
-	int temp = 0;
-	if (sscanf(cadena, "%d", &temp) == 1)
-	{
-		*desplazamiento = (uint8_t)temp;
-		return 1;
-	}
-	else
-		return 0;
-}
 
 /*
  * Función obtenerOpcode.
@@ -184,7 +143,7 @@ register_t obtenerRegistro(char * nombre)
 	return registro;
 }
 
-int obtenerIntruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
+int obtenerInstruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
 {
 	int resultado = 0;
 	register_t rt, rs, rd;
@@ -326,7 +285,7 @@ int obtenerIntruccionR(char * instruccion[], int numeroParametros, opcode_t codo
  * Devuelve una instrucción de tipo I a partir
  * del array de parámetros que recibe.
 */
-int obtenerIntruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
+int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
 {
 	int resultado = 0;
 	register_t rt, rs;
@@ -388,12 +347,20 @@ int obtenerIntruccionI(char * instruccion[], int numeroParametros, opcode_t codo
 }
 
 
-uint32_t obtenerInstruccionJ(char * instruccion[])
+int obtenerInstruccionJ(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
 {
+	int resultado = 0;
 	uint32_t opcodeJ = 0;
 
-	
+	if (numeroParametros == 2)
+	{
+		if (codopt.codopt == 0x02) //instrucción j
+		{
+			//buscar direccion de instruccion[1]
+		}
+	}
 
+	return resultado;
 }
 
 /*
@@ -413,11 +380,11 @@ int obtenerInstruccion(char * instruccion[], int numeroParametros, uint32_t * op
 		switch (codopt.tipo)
 		{
 			case 'R':
-				return obtenerIntruccionR(instruccion, numeroParametros, codopt, opcode);
+				return obtenerInstruccionR(instruccion, numeroParametros, codopt, opcode);
 			case 'I':
-				return obtenerIntruccionI(instruccion, numeroParametros, codopt, opcode);
+				return obtenerInstruccionI(instruccion, numeroParametros, codopt, opcode);
 			case 'J':
-				return 0;
+				return obtenerInstruccionJ(instruccion, numeroParametros, codopt, opcode);
 		}		
 	}
 }

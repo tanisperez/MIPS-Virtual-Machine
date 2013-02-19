@@ -1,64 +1,166 @@
 #include <saltos.h>
-#include <ensamblador.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
 #include <string.h>
-#include <ctype.h>
+
+/***************************************************************************************************
+ ***************************************************************************************************
+ ************ Funciones para manejar la lista de saltos conocidos **********************************
+ ***************************************************************************************************
+ **************************************************************************************************/
 
 /*
- * Crear una función esSalto que compruebe si una línea de un 
- * archivo de código fuente es una etiqueta de salto válida.
- *
+ * Función listaSaltos_crear.
+ * Inicializa la estructura saltos_list_t.
 */
-
-
-/*
- * Función: esSalto.
- * Determina si una línea es una etiqueta de salto válida,
- * para ello comprueba su sintaxis.
- * Una etiqueta de salto válida:
- * - No puede contener símbolos no numéricos, excepto los dos puntos al final de la cadena
- *   y la barra baja.
- * - No puede contener espacios.
- *- No puede empezar por un número.
- *
-*/
-int esSalto(char * linea)
+void listaSaltos_crear(saltos_list_t * lista)
 {
-	int result = 0, i = 1;
-	char * salto = strtok(linea, " ,\t\n");
-
-	if (salto != NULL)
+	if (lista == NULL)
 	{
-		//Primero comprobamos que termina en ":" y
-		// que no empieza por un número. 
-		if (strlen(salto) > 1
-			&& salto[strlen(salto) - 1] == ':'
-			&& !isdigit(salto[0]))
-		{
-			for (; i < strlen(salto); i++)
-			{
-				//Comprobar caracteres a..z
-				if (salto[i] == '_' || isdigit(salto[i]) || isalpha(salto[i]))
-					result = 1;
-				else
-					break;
-			}
-		}
+		printf("listaSaltos_crear error! Puntero nulo!\n");
+		exit(EXIT_FAILURE);
 	}
-
-	return result;
+	
+	lista->primero = NULL;
+	lista->ultimo = NULL;
 }
 
 
-void buscarDireccionesSalto(FILE * source)
+/*
+ * Función listaSaltos_insertar.
+ * Inserta una etiqueta de salto y la dirección en la que se encuentra
+ * dicha etiqueta en la lista de saltos.
+*/
+void listaSaltos_insertar(saltos_list_t * lista, char * etiquetaSalto, int32_t direccionSalto)
 {
- 	static char linea[MAX_LINEA];
+	saltos_t * temp = (saltos_t*) malloc(sizeof(saltos_t));
 
- 	while(fgets(linea, MAX_LINEA, source) != NULL)
- 	{
- 		if (esSalto(linea))
- 		{
- 			printf("Se encontró un salto: %s\n", linea);
- 		}
+	if (temp == NULL)
+	{
+		printf("listaSaltos_insertar() error! No se pudo reservar memoria!\n");
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		temp->siguiente = NULL;
+		temp->direccionSalto = direccionSalto;
+		temp->etiquetaSalto = (char *) malloc(strlen(etiquetaSalto));
+		if (temp->etiquetaSalto == NULL)
+		{
+			printf("listaSaltos_insertar() error! No se pudo reservar memoria!\n");
+			exit(EXIT_FAILURE);
+		}
+		else 
+		{
+			strcpy(temp->etiquetaSalto, etiquetaSalto);
+			if (lista->primero == NULL)
+			{
+				lista->primero = temp;
+				lista->ultimo = temp;
+			}
+			else
+			{
+				lista->ultimo->siguiente = temp;
+				lista->ultimo = temp;
+			}
+		}	
+	}
+}
 
- 	}
+
+/*
+ * Función listaSaltos_vaciar.
+ * Vacía y libera la memoria dinámica reservada de la
+ * lista de saltos.
+*/
+void listaSaltos_vaciar(saltos_list_t * lista)
+{
+	saltos_t * l = lista->primero;
+	saltos_t * temp = NULL;
+
+	while (l != NULL)
+	{
+		temp = l;
+		l = l->siguiente;
+
+		if (temp->etiquetaSalto != NULL)
+			free(temp->etiquetaSalto);
+
+		free(temp);
+	}
+}
+
+
+/*
+ * Función listaSaltos_mostrar.
+ * Muestra todas las etiquetas de saltos con sus direcciones de salto
+ * que haya almacenadas en la lista.
+*/
+void listaSaltos_mostrar(saltos_list_t * lista)
+{
+	saltos_t * l = lista->primero;
+	saltos_t * temp = NULL;
+
+	while (l != NULL)
+	{
+		temp = l;
+		l = l->siguiente;
+
+		if (temp->etiquetaSalto != NULL)
+			printf("Salto \"%s\" en %.8x\n", temp->etiquetaSalto, temp->direccionSalto);
+	}
+}
+
+
+
+/*
+ * Función listaSaltos_buscar.
+ * Buscar en la lista una etiqueta de salto, si tiene éxito,
+ * guarda la dirección de salto en el puntero direccion y devuelve 1.
+ * En caso contrario devuelve 0.
+*/
+int listaSaltos_buscar(saltos_list_t * lista, char * etiqueta, int32_t * direccion)
+{
+	saltos_t * l = lista->primero;
+	saltos_t * temp = NULL;
+
+	while (l != NULL)
+	{
+		temp = l;
+		l = l->siguiente;
+
+		if (strcmp(temp->etiquetaSalto, etiqueta) == 0)
+		{
+			*direccion = temp->direccionSalto;
+			return 1;	
+		}
+	}
+
+	return 0;
+}
+
+
+
+/***************************************************************************************************
+ ***************************************************************************************************
+ ************ Funciones para manejar la lista de instrucciones con saltos desconocidos *************
+ ***************************************************************************************************
+ **************************************************************************************************/
+
+
+/*
+ * Función listaISaltos_crear.
+ * Inicializa la estructura i_saltos_list_t.
+*/
+void listaISaltos_crear(i_saltos_list_t * lista)
+{
+	if (lista == NULL)
+	{
+		printf("listaSaltos_crear error! Puntero nulo!\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	lista->primero = NULL;
+	lista->ultimo = NULL;
 }
