@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <cadenas.h>
+#include <programBuffer.h>
+#include <saltos.h>
 
 opcode_t listaInstrucciones[] = {
 	/* Instrucciones Tipo-R */
@@ -91,11 +93,17 @@ register_t listaRegistros[] = {
 	{NULL, 		NULL, 	0}
 	};
 
+/* Funciones privadas */
 opcode_t obtenerOpcode(char * nombre);
 register_t obtenerRegistro(char * nombre);
 int obtenerInstruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
 int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
 int obtenerInstruccionJ(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
+
+/* Variables externas de ensamblador.c */
+extern saltos_list_t listaEtiquetasSalto;
+extern i_saltos_list_t listaInstruccionesSaltoDesconocido;
+extern buffer_t progBuffer;
 
 
 /*
@@ -351,11 +359,19 @@ int obtenerInstruccionJ(char * instruccion[], int numeroParametros, opcode_t cod
 {
 	int resultado = 0;
 	uint32_t opcodeJ = 0;
+	int32_t direccionSalto = 0;
 
 	if (numeroParametros == 2)
 	{
 		if (codopt.codopt == 0x02) //instrucción j
 		{
+			//Comprobar con esSalto la etiqueta de salto
+			if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[1], &direccionSalto))
+			{
+				printf("Salto conocido en: %.8x\n", direccionSalto);
+				*opcode = (codopt.codopt << 26) | (0x03FFFFFF & direccionSalto);
+				resultado = 1;
+			}
 			//buscar direccion de instruccion[1]
 		}
 	}

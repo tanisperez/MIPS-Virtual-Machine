@@ -39,5 +39,8 @@ int listaSaltos_buscar(saltos_list_t * lista, char * etiquetaSalto, int32_t * di
 
 
 void listaISaltos_crear(i_saltos_list_t * lista);
+void listaISaltos_insertar(i_saltos_list_t * lista, char * etiquetaSalto, uint32_t posicionInstruccion);
+void listaISaltos_vaciar(i_saltos_list_t * lista);
+void listaISaltos_mostrar(i_saltos_list_t * lista);
 
 #endif

@@ -56,4 +56,7 @@ void ori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 void slti(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
 void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
 
+/* Funciones Tipo-J */
+void j(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
+
 #endif

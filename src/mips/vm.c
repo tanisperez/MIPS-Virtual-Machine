@@ -1,6 +1,7 @@
 #include <vm.h>
 #include <alu.h>
 #include <stdio.h>
+#include <signal.h>
 #include <malloc.h>
 #include <string.h>
 
@@ -70,7 +71,7 @@ opcode_t listaInstrucciones[] = {
 	{"sw",		0x2B, 'I', 0x00, NULL}, //sw $t, offset($s)
 	{"xori",	0x0E, 'I', 0x00, NULL}, //xori $t, $s, imm
 	/* Instrucciones Tipo-J */
-	{"j",		0x02, 'J', 0x00, NULL}, //j target
+	{"j",		0x02, 'J', 0x00, j}, //j target
 	{"jal",		0x03, 'J', 0x00, NULL}, //jal target
 	{NULL, 		0x3F, '\0', 0x00, NULL},
 	};
@@ -111,6 +112,12 @@ register_t listaRegistros[REG_COUNT] = {
 	{"$fp", 	30,	&cpu.registros.fp},
 	{"$ra", 	31,	&cpu.registros.ra}
 	};
+
+
+void sigintEvent()
+{
+	cpu.syscallTermination = 1;
+}
 
 
 /*
@@ -197,11 +204,14 @@ void interpretarInstruccion(uint32_t opcode)
 
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{
-		if ((listaInstrucciones[i].codopt == codopt && 
+		/*if ((listaInstrucciones[i].codopt == codopt && 
 			listaInstrucciones[i].codfunc == codfunc && listaInstrucciones[i].tipo == 'R')
 			|| (listaInstrucciones[i].codopt == codopt && 
 					listaInstrucciones[i].codfunc == 0x00 && listaInstrucciones[i].tipo == 'I')
-			|| (listaInstrucciones[i].codopt == 0x01 && listaInstrucciones[i].codfunc == codfunc))
+			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == codfunc))
+		{*/
+		if ((listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == codfunc) //Tipo-R
+			|| (listaInstrucciones[i].codopt == codopt)) //Tipo-I y Tipo-J (faltan las 0x01)
 		{
 			if (listaInstrucciones[i].funcion == NULL)
 				printf("Función %s sin implementar o desconocida!\n", listaInstrucciones[i].operacion);
@@ -265,6 +275,8 @@ void interpretarArchivo(char * archivo)
 				cpu.shouldAdvance = 1;
 				cpu.syscallTermination = 0;
 				memset(&cpu.registros, 0, sizeof(registers_t));
+
+				signal(SIGINT, sigintEvent);
 
 				execute();
 

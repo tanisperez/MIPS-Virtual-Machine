@@ -12,6 +12,7 @@ void procesarCodigoFuente(FILE * source, char * destino);
 
 /* Variables globales */
 saltos_list_t listaEtiquetasSalto;
+i_saltos_list_t listaInstruccionesSaltoDesconocido;
 buffer_t progBuffer;
 
 /*
@@ -69,6 +70,7 @@ void procesarCodigoFuente(FILE * source, char * destino)
 
 	buffer_init(&progBuffer);
 	listaSaltos_crear(&listaEtiquetasSalto);
+	listaISaltos_crear(&listaInstruccionesSaltoDesconocido);
 
 	while(fgets(linea, MAX_LINEA, source) != NULL)
 	{
@@ -110,8 +112,10 @@ void procesarCodigoFuente(FILE * source, char * destino)
 		generarBinario(destino);	
 	
 	listaSaltos_mostrar(&listaEtiquetasSalto);
+	listaISaltos_mostrar(&listaInstruccionesSaltoDesconocido);
 
 	listaSaltos_vaciar(&listaEtiquetasSalto);
+	listaISaltos_vaciar(&listaInstruccionesSaltoDesconocido);
 	buffer_free(&progBuffer);
 }
 

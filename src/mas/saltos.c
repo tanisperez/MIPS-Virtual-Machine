@@ -54,6 +54,7 @@ void listaSaltos_insertar(saltos_list_t * lista, char * etiquetaSalto, int32_t d
 		else 
 		{
 			strcpy(temp->etiquetaSalto, etiquetaSalto);
+			temp->etiquetaSalto[strlen(etiquetaSalto) - 1] = '\0';
 			if (lista->primero == NULL)
 			{
 				lista->primero = temp;
@@ -163,4 +164,92 @@ void listaISaltos_crear(i_saltos_list_t * lista)
 	
 	lista->primero = NULL;
 	lista->ultimo = NULL;
+}
+
+
+/*
+ * Función listaISaltos_insertar.
+ * Inserta una etiqueta de salto y la dirección en la que se encuentra
+ * dicha etiqueta en la lista de saltos.
+*/
+void listaISaltos_insertar(i_saltos_list_t * lista, char * etiquetaSalto, uint32_t posicionInstruccion)
+{
+	i_saltos_t * temp = (i_saltos_t*) malloc(sizeof(i_saltos_t));
+
+	if (temp == NULL)
+	{
+		printf("listaSaltos_insertar() error! No se pudo reservar memoria!\n");
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		temp->siguiente = NULL;
+		temp->posicionInstruccion = posicionInstruccion;
+		temp->etiquetaSalto = (char *) malloc(strlen(etiquetaSalto));
+		if (temp->etiquetaSalto == NULL)
+		{
+			printf("listaSaltos_insertar() error! No se pudo reservar memoria!\n");
+			exit(EXIT_FAILURE);
+		}
+		else 
+		{
+			strcpy(temp->etiquetaSalto, etiquetaSalto);
+			temp->etiquetaSalto[strlen(etiquetaSalto) - 1] = '\0';
+			if (lista->primero == NULL)
+			{
+				lista->primero = temp;
+				lista->ultimo = temp;
+			}
+			else
+			{
+				lista->ultimo->siguiente = temp;
+				lista->ultimo = temp;
+			}
+		}	
+	}
+}
+
+
+
+/*
+ * Función listaISaltos_vaciar.
+ * Vacía y libera la memoria dinámica reservada de la
+ * lista de saltos.
+*/
+void listaISaltos_vaciar(i_saltos_list_t * lista)
+{
+	i_saltos_t * l = lista->primero;
+	i_saltos_t * temp = NULL;
+
+	while (l != NULL)
+	{
+		temp = l;
+		l = l->siguiente;
+
+		if (temp->etiquetaSalto != NULL)
+			free(temp->etiquetaSalto);
+
+		free(temp);
+	}
+}
+
+
+/*
+ * Función listaSaltos_mostrar.
+ * Muestra todas las etiquetas de saltos con sus direcciones de salto
+ * que haya almacenadas en la lista.
+*/
+void listaISaltos_mostrar(i_saltos_list_t * lista)
+{
+	i_saltos_t * l = lista->primero;
+	i_saltos_t * temp = NULL;
+
+	while (l != NULL)
+	{
+		temp = l;
+		l = l->siguiente;
+
+		if (temp->etiquetaSalto != NULL)
+			printf("Etiqueta \"%s\" en %.8x\n", temp->etiquetaSalto, temp->posicionInstruccion);
+	}
 }

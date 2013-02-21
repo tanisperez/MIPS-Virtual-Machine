@@ -172,3 +172,12 @@ void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offs
 /******************************************************************************************************
  Funciones Tipo-J
 ******************************************************************************************************/
+
+
+void j(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	cpu.PC = (cpu.PC & 0xF0000000) | (direction << 2);
+	printf("Vamos a saltar a %.8x\n", cpu.PC);
+
+	cpu.shouldAdvance = 0;
+}
