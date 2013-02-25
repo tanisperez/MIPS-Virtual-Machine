@@ -157,7 +157,17 @@ int match(const char * string, char * pattern)
 */
 int esSalto(const char * linea)
 {
-	return match(linea, "^[_a-z]([0-9a-z_]+):");
+	return match(linea, "^[_a-z][0-9a-z_]+:");
 }
 
+
+/*
+ * Fúnción: esEtiquetaSalto.
+ * Determina si una etiqueta de salto, dentro de una
+ * instrucción es válida.
+*/
+int esEtiquetaSalto(const char * linea)
+{
+	return match(linea, "^[_a-z][0-9a-z_]+");
+}
 

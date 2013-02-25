@@ -17,5 +17,6 @@ int match(const char * string, char * pattern);
 
 /* Funciones expresiones regulares */
 int esSalto(const char * linea);
+int esEtiquetaSalto(const char * linea);
 
 #endif

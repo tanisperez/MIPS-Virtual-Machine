@@ -53,14 +53,14 @@ opcode_t listaInstrucciones[] = {
 	{"addi", 	0x08, 'I', 0x00, addi}, //addi $t, $s, imm
 	{"addiu", 	0x09, 'I', 0x00, addiu}, //addiu $t, $s, imm
 	{"andi",	0x0C, 'I', 0x00, andi}, //andi $t, $s, imm
-	{"beq",		0x04, 'I', 0x00, NULL}, //beq $s, $t, offset
+	{"beq",		0x04, 'I', 0x00, beq}, //beq $s, $t, offset
 	{"bgez",	0x01, 'I', 0x01, NULL}, //bgez $s, offset
 	{"bgezal",	0x01, 'I', 0x11, NULL}, //bgezal $s, offset
 	{"bgtz",	0x07, 'I', 0x00, NULL}, //bgtz $s, offset
 	{"blez",	0x06, 'I', 0x00, NULL}, //blez $s, offset
 	{"bltz",	0x01, 'I', 0x00, NULL}, //bltz $s, offset
 	{"bltzal",	0x01, 'I', 0x10, NULL}, //bltzal $s, offset
-	{"bne",		0x05, 'I', 0x00, NULL}, //bne $s, $t, offset
+	{"bne",		0x05, 'I', 0x00, bne}, //bne $s, $t, offset
 	{"lb",		0x20, 'I', 0x00, NULL}, //lb $t, offset($s)
 	{"lui",		0x0F, 'I', 0x00, NULL}, //lui $t, imm
 	{"lw",		0x23, 'I', 0x00, NULL}, //lw $t, offset($s)
@@ -211,7 +211,8 @@ void interpretarInstruccion(uint32_t opcode)
 			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == codfunc))
 		{*/
 		if ((listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == codfunc) //Tipo-R
-			|| (listaInstrucciones[i].codopt == codopt)) //Tipo-I y Tipo-J (faltan las 0x01)
+			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == 0x00 &&
+				listaInstrucciones[i].tipo != 'R')) //Tipo-I y Tipo-J (faltan las 0x01)
 		{
 			if (listaInstrucciones[i].funcion == NULL)
 				printf("Función %s sin implementar o desconocida!\n", listaInstrucciones[i].operacion);

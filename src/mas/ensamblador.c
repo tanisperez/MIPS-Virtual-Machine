@@ -7,6 +7,7 @@
 
 /* Funciones privadas */
 void generarBinario(char * destino);
+void recorrerListaInstruccionesSaltoDesconocido();
 int escribirInstruccionBuffer(char * instruccion[], int numeroParametros, int numeroLinea, buffer_t * b);
 void procesarCodigoFuente(FILE * source, char * destino);
 
@@ -25,12 +26,51 @@ void generarBinario(char * destino)
 	FILE * dest = fopen(destino, "w+");
 	if (dest != NULL)
 	{
-		fwrite(progBuffer.buffer, sizeof(uint32_t),progBuffer.bufferUsado, dest);
+		fwrite(progBuffer.buffer, sizeof(uint32_t), progBuffer.bufferUsado, dest);
 		fclose(dest);
 	}
 	else
 		printf("No se pudo crear \"%s\"!\n", destino);
 }
+
+
+void recorrerListaInstruccionesSaltoDesconocido()
+{
+	uint8_t codopt = 0;
+	uint32_t opcode = 0;
+	int32_t direccionSalto = 0;
+	i_saltos_t * l = listaInstruccionesSaltoDesconocido.primero;
+	i_saltos_t * temp = NULL;
+
+	while (l != NULL)
+	{
+		opcode = progBuffer.buffer[l->posicionInstruccion];
+		codopt = (uint8_t)(opcode >> 26);
+
+		switch (codopt)
+		{
+			case 0x02:
+				if (listaSaltos_buscar(&listaEtiquetasSalto, l->etiquetaSalto, &direccionSalto))
+					progBuffer.buffer[l->posicionInstruccion] = (codopt << 26) | (0x03FFFFFF & direccionSalto);
+				else
+					printf("Error crítico!\n");
+				break;
+			case 0x04:
+			case 0x05:
+				if (listaSaltos_buscar(&listaEtiquetasSalto, l->etiquetaSalto, &direccionSalto))
+				{
+					progBuffer.buffer[l->posicionInstruccion] = (opcode & 0xFFFF0000) | 
+						((int16_t)direccionSalto - (l->posicionInstruccion * 4)); // <------------ Cuidado
+				}
+				else
+					printf("Error crítico!\n");
+				break;
+		}
+
+		l = l->siguiente;
+	}
+}
+
 
 
 /*
@@ -80,9 +120,7 @@ void procesarCodigoFuente(FILE * source, char * destino)
 		
 		if (esSalto(linea))
 		{
-			//añadir linea
-			listaSaltos_insertar(&listaEtiquetasSalto, linea, progBuffer.bufferUsado << 2);
-			//printf("Salto! en %.8x\n", b.bufferUsado << 2);
+			listaSaltos_insertar(&listaEtiquetasSalto, linea, progBuffer.bufferUsado * 4);
 		}
 		else
 		{
@@ -108,11 +146,13 @@ void procesarCodigoFuente(FILE * source, char * destino)
 		
 	}
 
+	recorrerListaInstruccionesSaltoDesconocido();
+
 	if (ok)
 		generarBinario(destino);	
 	
-	listaSaltos_mostrar(&listaEtiquetasSalto);
-	listaISaltos_mostrar(&listaInstruccionesSaltoDesconocido);
+	//listaSaltos_mostrar(&listaEtiquetasSalto);
+	//listaISaltos_mostrar(&listaInstruccionesSaltoDesconocido);
 
 	listaSaltos_vaciar(&listaEtiquetasSalto);
 	listaISaltos_vaciar(&listaInstruccionesSaltoDesconocido);

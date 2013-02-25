@@ -147,6 +147,24 @@ void andi(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 	*rt = (*rs) & offset;
 }
 
+void beq(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if (*rs == *rt)
+	{
+		cpu.PC += offset;
+		cpu.shouldAdvance = 0;
+	}
+}
+
+void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if (*rs != *rt)
+	{
+		cpu.PC += offset;
+		cpu.shouldAdvance = 0;
+	}
+}
+
 void ori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	*rt = (*rs) | offset;
@@ -176,7 +194,8 @@ void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offs
 
 void j(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	cpu.PC = (cpu.PC & 0xF0000000) | (direction << 2);
+	/* Revisar el * 2 */
+	cpu.PC = (cpu.PC & 0xF0000000) | (direction/* << 2*/);
 	printf("Vamos a saltar a %.8x\n", cpu.PC);
 
 	cpu.shouldAdvance = 0;

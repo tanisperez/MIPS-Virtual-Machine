@@ -299,6 +299,7 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 	register_t rt, rs;
 	uint32_t opcodeI = 0;
 	uint16_t inmediato = 0;
+	int16_t direccionSalto = 0;
 	
 	switch (codopt.codopt)
 	{
@@ -329,7 +330,19 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 						beq o bne. */
 					if (codopt.codopt == 0x04 || codopt.codopt == 0x05)
 					{
-
+						if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[3], &direccionSalto))
+						{
+							*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+											| (rt.codigo << 16) | direccionSalto;
+							resultado = 1;
+						}
+						else
+						{
+							listaISaltos_insertar(&listaInstruccionesSaltoDesconocido, instruccion[3], progBuffer.bufferUsado);
+							*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+											| (rt.codigo << 16);
+							resultado = 1;
+						}
 					}
 					else
 					{
@@ -366,13 +379,22 @@ int obtenerInstruccionJ(char * instruccion[], int numeroParametros, opcode_t cod
 		if (codopt.codopt == 0x02) //instrucción j
 		{
 			//Comprobar con esSalto la etiqueta de salto
-			if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[1], &direccionSalto))
+			if (esEtiquetaSalto(instruccion[1]))
 			{
-				printf("Salto conocido en: %.8x\n", direccionSalto);
-				*opcode = (codopt.codopt << 26) | (0x03FFFFFF & direccionSalto);
-				resultado = 1;
+				if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[1], &direccionSalto))
+				{
+					*opcode = (codopt.codopt << 26) | (0x03FFFFFF & direccionSalto);
+					resultado = 1;
+				}
+				else
+				{
+					listaISaltos_insertar(&listaInstruccionesSaltoDesconocido, instruccion[1], progBuffer.bufferUsado);
+					*opcode = (codopt.codopt << 26) | (0x00000000);
+					resultado = 1;
+				}
 			}
-			//buscar direccion de instruccion[1]
+			else
+				printf("Error! La etiqueta de salto \"%s\" contiene caracteres inválidos!\n", instruccion[1]);
 		}
 	}
 

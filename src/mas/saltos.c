@@ -45,7 +45,7 @@ void listaSaltos_insertar(saltos_list_t * lista, char * etiquetaSalto, int32_t d
 	{
 		temp->siguiente = NULL;
 		temp->direccionSalto = direccionSalto;
-		temp->etiquetaSalto = (char *) malloc(strlen(etiquetaSalto));
+		temp->etiquetaSalto = (char *) malloc(strlen(etiquetaSalto) + 1);
 		if (temp->etiquetaSalto == NULL)
 		{
 			printf("listaSaltos_insertar() error! No se pudo reservar memoria!\n");
@@ -185,7 +185,7 @@ void listaISaltos_insertar(i_saltos_list_t * lista, char * etiquetaSalto, uint32
 	{
 		temp->siguiente = NULL;
 		temp->posicionInstruccion = posicionInstruccion;
-		temp->etiquetaSalto = (char *) malloc(strlen(etiquetaSalto));
+		temp->etiquetaSalto = (char *) malloc(strlen(etiquetaSalto) + 1);
 		if (temp->etiquetaSalto == NULL)
 		{
 			printf("listaSaltos_insertar() error! No se pudo reservar memoria!\n");
@@ -194,7 +194,7 @@ void listaISaltos_insertar(i_saltos_list_t * lista, char * etiquetaSalto, uint32
 		else 
 		{
 			strcpy(temp->etiquetaSalto, etiquetaSalto);
-			temp->etiquetaSalto[strlen(etiquetaSalto) - 1] = '\0';
+			//temp->etiquetaSalto[strlen(etiquetaSalto)] = '\0';
 			if (lista->primero == NULL)
 			{
 				lista->primero = temp;
@@ -250,6 +250,6 @@ void listaISaltos_mostrar(i_saltos_list_t * lista)
 		l = l->siguiente;
 
 		if (temp->etiquetaSalto != NULL)
-			printf("Etiqueta \"%s\" en %.8x\n", temp->etiquetaSalto, temp->posicionInstruccion);
+			printf("Modificar salto \"%s\" en %.8x\n", temp->etiquetaSalto, temp->posicionInstruccion * 4);
 	}
 }
