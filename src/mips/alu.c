@@ -160,7 +160,7 @@ void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 {
 	if (*rs != *rt)
 	{
-		cpu.PC += offset;
+		cpu.PC += offset * 4;
 		cpu.shouldAdvance = 0;
 	}
 }

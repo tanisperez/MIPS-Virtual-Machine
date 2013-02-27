@@ -6,7 +6,7 @@
 /* Lista de etiquetas de salto conocidas */
 typedef struct saltos_ {
 	char * etiquetaSalto;
-	int32_t direccionSalto;
+	uint32_t direccionSalto;
 
 	struct saltos_ * siguiente; //Puntero a la siguiente estructura
 } saltos_t;
@@ -32,10 +32,10 @@ typedef struct i_saltos_list {
 
 
 void listaSaltos_crear(saltos_list_t * lista);
-void listaSaltos_insertar(saltos_list_t * lista, char * etiquetaSalto, int32_t direccionSalto);
+void listaSaltos_insertar(saltos_list_t * lista, char * etiquetaSalto, uint32_t direccionSalto);
 void listaSaltos_vaciar(saltos_list_t * lista);
 void listaSaltos_mostrar(saltos_list_t * lista);
-int listaSaltos_buscar(saltos_list_t * lista, char * etiquetaSalto, int32_t * direccionSalto);
+int listaSaltos_buscar(saltos_list_t * lista, char * etiquetaSalto, uint32_t * direccionSalto);
 
 
 void listaISaltos_crear(i_saltos_list_t * lista);

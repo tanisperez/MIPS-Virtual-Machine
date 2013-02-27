@@ -194,6 +194,7 @@ void interpretarInstruccion(uint32_t opcode)
 {
 	unsigned int i = 0;
 	uint8_t codopt = (uint8_t)(opcode >> 26);
+	uint8_t codopt2 = (uint8_t)(opcode & 0x001F0000) >> 16;
 	uint8_t codfunc = (uint8_t)(opcode & 0x0000003F);
 	int32_t * rs = NULL;
 	int32_t * rt = NULL;
@@ -201,6 +202,8 @@ void interpretarInstruccion(uint32_t opcode)
 	uint8_t shamt = 0, temp = 0;
 	int16_t offset = 0;
 	uint32_t direction = 0;
+
+	printf("Codopt2: %.2x\n", codopt2);
 
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{

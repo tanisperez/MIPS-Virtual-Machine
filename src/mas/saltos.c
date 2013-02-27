@@ -32,7 +32,7 @@ void listaSaltos_crear(saltos_list_t * lista)
  * Inserta una etiqueta de salto y la dirección en la que se encuentra
  * dicha etiqueta en la lista de saltos.
 */
-void listaSaltos_insertar(saltos_list_t * lista, char * etiquetaSalto, int32_t direccionSalto)
+void listaSaltos_insertar(saltos_list_t * lista, char * etiquetaSalto, uint32_t direccionSalto)
 {
 	saltos_t * temp = (saltos_t*) malloc(sizeof(saltos_t));
 
@@ -121,7 +121,7 @@ void listaSaltos_mostrar(saltos_list_t * lista)
  * guarda la dirección de salto en el puntero direccion y devuelve 1.
  * En caso contrario devuelve 0.
 */
-int listaSaltos_buscar(saltos_list_t * lista, char * etiqueta, int32_t * direccion)
+int listaSaltos_buscar(saltos_list_t * lista, char * etiqueta, uint32_t * direccion)
 {
 	saltos_t * l = lista->primero;
 	saltos_t * temp = NULL;

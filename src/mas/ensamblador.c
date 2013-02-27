@@ -34,6 +34,11 @@ void generarBinario(char * destino)
 }
 
 
+/*
+ * Función recorrerListaInstruccionesSaltoDesconocido.
+ * Recorre la lista de saltos que tiene la dirección de salto
+ * sin establecer y la calcula.
+*/
 void recorrerListaInstruccionesSaltoDesconocido()
 {
 	uint8_t codopt = 0;
@@ -114,20 +119,19 @@ void procesarCodigoFuente(FILE * source, char * destino)
 
 	while(fgets(linea, MAX_LINEA, source) != NULL)
 	{
-		quitarSaltoLinea(linea);
+		//quitarSaltoLinea(linea);
 		quitarComentarios(linea);
 		minusculas(linea);
-		
-		if (esSalto(linea))
-		{
-			listaSaltos_insertar(&listaEtiquetasSalto, linea, progBuffer.bufferUsado * 4);
-		}
-		else
-		{
-			vaciarTrozos(trozos, MAX_TROZOS);
-			numeroTrozos = trocearCadena(linea, trozos, MAX_TROZOS);
 
-			if (numeroTrozos > 0)
+		vaciarTrozos(trozos, MAX_TROZOS);
+		numeroTrozos = trocearCadena(linea, trozos, MAX_TROZOS);
+		if (numeroTrozos > 0)
+		{
+			if (esSalto(trozos[0]))
+			{
+				listaSaltos_insertar(&listaEtiquetasSalto, trozos[0], progBuffer.bufferUsado * 4);
+			}
+			else
 			{
 				if (numeroTrozos <= TROZOS_UTILES)
 				{
@@ -139,11 +143,12 @@ void procesarCodigoFuente(FILE * source, char * destino)
 					}
 				}
 				else
-					printf("Línea %d: Error! \"%s\" no es una instrucción válida!\n", numLinea, linea);
+					printf("Línea %d: Error! \"%s\" no es una instrucción válida!\n", numLinea, trozos[0]);
 			}
+
 		}
-		numLinea++;
-		
+
+		numLinea++;		
 	}
 
 	recorrerListaInstruccionesSaltoDesconocido();
