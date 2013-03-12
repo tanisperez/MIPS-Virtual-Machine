@@ -330,14 +330,15 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 					if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[2], &direccionSalto))
 					{
 						saltoRelativo = (int16_t)(direccionSalto / 4) - progBuffer.bufferUsado;
-						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | (0x01 << 16) 
+
+						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | (codopt.codfunc << 16) 
 							| (saltoRelativo & 0x0000FFFF);
 						resultado = 1;
 					}
 					else
 					{
 						listaISaltos_insertar(&listaInstruccionesSaltoDesconocido, instruccion[2], progBuffer.bufferUsado);
-						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | 0x01;
+						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | (codopt.codfunc << 16);
 						resultado = 1;
 					}
 				}

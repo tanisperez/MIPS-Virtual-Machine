@@ -54,7 +54,7 @@ opcode_t listaInstrucciones[] = {
 	{"addiu", 	0x09, 'I', 0x00, addiu}, //addiu $t, $s, imm
 	{"andi",	0x0C, 'I', 0x00, andi}, //andi $t, $s, imm
 	{"beq",		0x04, 'I', 0x00, beq}, //beq $s, $t, offset
-	{"bgez",	0x01, 'I', 0x01, NULL}, //bgez $s, offset
+	{"bgez",	0x01, 'I', 0x01, bgez}, //bgez $s, offset
 	{"bgezal",	0x01, 'I', 0x11, NULL}, //bgezal $s, offset
 	{"bgtz",	0x07, 'I', 0x00, NULL}, //bgtz $s, offset
 	{"blez",	0x06, 'I', 0x00, NULL}, //blez $s, offset
@@ -194,7 +194,7 @@ void interpretarInstruccion(uint32_t opcode)
 {
 	unsigned int i = 0;
 	uint8_t codopt = (uint8_t)(opcode >> 26);
-	uint8_t codopt2 = (uint8_t)(opcode & 0x001F0000) >> 16;
+	uint8_t codopt2 = (uint8_t)((opcode & 0x001F0000) >> 16);
 	uint8_t codfunc = (uint8_t)(opcode & 0x0000003F);
 	int32_t * rs = NULL;
 	int32_t * rt = NULL;
@@ -203,24 +203,21 @@ void interpretarInstruccion(uint32_t opcode)
 	int16_t offset = 0;
 	uint32_t direction = 0;
 
-	printf("Codopt2: %.2x\n", codopt2);
-
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{
-		/*if ((listaInstrucciones[i].codopt == codopt && 
-			listaInstrucciones[i].codfunc == codfunc && listaInstrucciones[i].tipo == 'R')
-			|| (listaInstrucciones[i].codopt == codopt && 
-					listaInstrucciones[i].codfunc == 0x00 && listaInstrucciones[i].tipo == 'I')
-			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == codfunc))
-		{*/
-		if ((listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == codfunc) //Tipo-R
+		if ((listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].tipo == 'J')
+			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == codfunc
+				&& listaInstrucciones[i].tipo == 'R') //Tipo-R
 			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == 0x00 &&
-				listaInstrucciones[i].tipo != 'R')) //Tipo-I y Tipo-J (faltan las 0x01)
+				listaInstrucciones[i].tipo == 'I')
+			|| (codopt == 0x01 && listaInstrucciones[i].codfunc == codopt2 &&
+				listaInstrucciones[i].tipo == 'I'))
 		{
 			if (listaInstrucciones[i].funcion == NULL)
 				printf("Función %s sin implementar o desconocida!\n", listaInstrucciones[i].operacion);
 			else
 			{
+				printf("Instrucción: %s\n", listaInstrucciones[i].operacion);
 				switch (listaInstrucciones[i].tipo)
 				{
 					case 'R':

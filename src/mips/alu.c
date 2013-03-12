@@ -156,6 +156,15 @@ void beq(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 	}
 }
 
+void bgez(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if ((*rs) >= 0)
+	{
+		cpu.PC += offset * 4;
+		cpu.shouldAdvance = 0;
+	}
+}
+
 void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	if (*rs != *rt)
