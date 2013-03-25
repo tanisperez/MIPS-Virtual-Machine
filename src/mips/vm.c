@@ -45,8 +45,8 @@ opcode_t listaInstrucciones[] = {
 	{"sra",		0x00, 'R', 0x03, NULL}, //sra $d, $t, h
 	{"srl",		0x00, 'R', 0x02, NULL}, //srl $d, $t, h
 	{"srlv",	0x00, 'R', 0x06, NULL}, //srlv $d, $t, $s
-	{"sub",		0x00, 'R', 0x22, NULL}, //sub $d, $s, $t
-	{"subu",	0x00, 'R', 0x23, NULL}, //subu $d, $s, $t
+	{"sub",		0x00, 'R', 0x22, sub}, //sub $d, $s, $t
+	{"subu",	0x00, 'R', 0x23, subu}, //subu $d, $s, $t
 	{"xor",		0x00, 'R', 0x26, xor}, //xor $d, $s, $t
 	{"syscall",	0x00, 'R', 0x0C, syscall}, //syscall
 	/* Instrucciones Tipo-I */
@@ -56,9 +56,9 @@ opcode_t listaInstrucciones[] = {
 	{"beq",		0x04, 'I', 0x00, beq}, //beq $s, $t, offset
 	{"bgez",	0x01, 'I', 0x01, bgez}, //bgez $s, offset
 	{"bgezal",	0x01, 'I', 0x11, NULL}, //bgezal $s, offset
-	{"bgtz",	0x07, 'I', 0x00, NULL}, //bgtz $s, offset
-	{"blez",	0x06, 'I', 0x00, NULL}, //blez $s, offset
-	{"bltz",	0x01, 'I', 0x00, NULL}, //bltz $s, offset
+	{"bgtz",	0x07, 'I', 0x00, bgtz}, //bgtz $s, offset
+	{"blez",	0x06, 'I', 0x00, blez}, //blez $s, offset
+	{"bltz",	0x01, 'I', 0x00, bltz}, //bltz $s, offset
 	{"bltzal",	0x01, 'I', 0x10, NULL}, //bltzal $s, offset
 	{"bne",		0x05, 'I', 0x00, bne}, //bne $s, $t, offset
 	{"lb",		0x20, 'I', 0x00, NULL}, //lb $t, offset($s)
@@ -69,7 +69,7 @@ opcode_t listaInstrucciones[] = {
 	{"slti",	0x0A, 'I', 0x00, slti}, //slti $t, $s, imm
 	{"sltiu",	0x0B, 'I', 0x00, sltiu}, //sltiu $t, $s, imm
 	{"sw",		0x2B, 'I', 0x00, NULL}, //sw $t, offset($s)
-	{"xori",	0x0E, 'I', 0x00, NULL}, //xori $t, $s, imm
+	{"xori",	0x0E, 'I', 0x00, xori}, //xori $t, $s, imm
 	/* Instrucciones Tipo-J */
 	{"j",		0x02, 'J', 0x00, j}, //j target
 	{"jal",		0x03, 'J', 0x00, NULL}, //jal target
@@ -205,14 +205,16 @@ void interpretarInstruccion(uint32_t opcode)
 	int16_t offset = 0;
 	uint32_t direction = 0;
 
+	printf("codopt: %.2x, codopt2: %.2x\n", codopt, codopt2);
+
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{
-		if ((listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].tipo == 'J')
-			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == codfunc
+		if ((listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].tipo == 'J') //Tipo-J
+			|| (codopt == 0x00 && listaInstrucciones[i].codfunc == codfunc
 				&& listaInstrucciones[i].tipo == 'R') //Tipo-R
 			|| (listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].codfunc == 0x00 &&
-				listaInstrucciones[i].tipo == 'I')
-			|| (codopt == 0x01 && listaInstrucciones[i].codfunc == codopt2 &&
+				listaInstrucciones[i].tipo == 'I') //Tipo-I
+			|| (listaInstrucciones[i].codopt == codopt == 0x01 && listaInstrucciones[i].codfunc == codopt2 &&
 				listaInstrucciones[i].tipo == 'I'))
 		{
 			if (listaInstrucciones[i].funcion == NULL)

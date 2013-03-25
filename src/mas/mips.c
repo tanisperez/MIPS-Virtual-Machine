@@ -325,8 +325,8 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 			rs = obtenerRegistro(instruccion[1]);
 			if (rs.nombre != NULL)
 			{
-				if (strcmp(codopt.operacion, "bgez") == 0)
-				{
+				//if (strcmp(codopt.operacion, "bgez") == 0)
+				//{
 					if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[2], &direccionSalto))
 					{
 						saltoRelativo = (int16_t)(direccionSalto / 4) - progBuffer.bufferUsado;
@@ -341,7 +341,7 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | (codopt.codfunc << 16);
 						resultado = 1;
 					}
-				}
+				//}
 			}
 			else
 				printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[1]);

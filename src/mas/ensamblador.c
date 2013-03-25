@@ -55,6 +55,10 @@ void recorrerListaInstruccionesSaltoDesconocido()
 		switch (codopt)
 		{
 			case 0x01:
+			case 0x04:
+			case 0x05:
+			case 0x06:
+			case 0x07:
 				if (listaSaltos_buscar(&listaEtiquetasSalto, l->etiquetaSalto, &direccionSalto))
 				{
 					progBuffer.buffer[l->posicionInstruccion] = (opcode & 0xFFFF0000) | 
@@ -66,16 +70,6 @@ void recorrerListaInstruccionesSaltoDesconocido()
 			case 0x02:
 				if (listaSaltos_buscar(&listaEtiquetasSalto, l->etiquetaSalto, &direccionSalto))
 					progBuffer.buffer[l->posicionInstruccion] = (codopt << 26) | (0x03FFFFFF & direccionSalto);
-				else
-					printf("Error crítico!\n");
-				break;
-			case 0x04:
-			case 0x05:
-				if (listaSaltos_buscar(&listaEtiquetasSalto, l->etiquetaSalto, &direccionSalto))
-				{
-					progBuffer.buffer[l->posicionInstruccion] = (opcode & 0xFFFF0000) | 
-						((int16_t)(direccionSalto / 4) - l->posicionInstruccion);
-				}
 				else
 					printf("Error crítico!\n");
 				break;

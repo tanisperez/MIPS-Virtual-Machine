@@ -96,6 +96,16 @@ void sltu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 		*rd = 0;
 }
 
+void sub(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	*rd = (*rs) - (*rt);
+}
+
+void subu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	*rd = abs(*rs) - abs(*rt);
+}
+
 void xor(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	*rd = (*rs) ^ (*rt);
@@ -159,6 +169,24 @@ void bgez(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 		cpu.PC += (--offset) << 2;
 }
 
+void bgtz(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if ((*rs) > 0)
+		cpu.PC += (--offset) << 2;
+}
+
+void blez(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if ((*rs) <= 0)
+		cpu.PC += (--offset) << 2;
+}
+
+void bltz(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if ((*rs) < 0)
+		cpu.PC += (--offset) << 2;
+}
+
 void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	if (*rs != *rt)
@@ -184,6 +212,11 @@ void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offs
 		*rt = 1;
 	else
 		*rt = 0;
+}
+
+void xori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	*rt = (*rs) ^ offset;
 }
 
 
