@@ -114,6 +114,12 @@ register_t listaRegistros[REG_COUNT] = {
 	};
 
 
+/*
+ * Función sigintEvent.
+ * Ejecuta esta función cuando el sistema detecta la pulsación de
+ * Control + C. Establece el flag syscallTermination a 1 que detendrá
+ * el bucle de la función execute().
+*/
 void sigintEvent()
 {
 	cpu.syscallTermination = 1;
@@ -157,13 +163,11 @@ void execute()
 	while (cpu.PC < cpu.program_size && cpu.syscallTermination == 0)
 	{
 		opcode = cpu.byteCode[cpu.PC >> 2]; //Dividimos entre 4
-		printf("Opcode: %.8x\n", opcode);
-		interpretarInstruccion(opcode);
+		printf("PC: %.8x Opcode: %.8x\n", cpu.PC, opcode);
 
-		if (cpu.shouldAdvance)
-			cpu.PC += 4;
-		else
-			cpu.shouldAdvance =  1;
+		cpu.PC += 4;
+
+		interpretarInstruccion(opcode);
 	}
 
 	visualizarCPUInfo(cpu);
@@ -179,8 +183,6 @@ void execute()
 void liberarPrograma()
 {
 	free(cpu.byteCode);
-
-	cpu.syscallTermination = 1;
 }
 
 
@@ -273,7 +275,6 @@ void interpretarArchivo(char * archivo)
 			if (itemsRead == (cpu.program_size / 4))
 			{
 				cpu.PC = 0;
-				cpu.shouldAdvance = 1;
 				cpu.syscallTermination = 0;
 				memset(&cpu.registros, 0, sizeof(registers_t));
 

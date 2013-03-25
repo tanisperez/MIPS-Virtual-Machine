@@ -12,7 +12,6 @@
 
 void print_integer(uint32_t i);
 void read_integer(uint32_t * i);
-void exit1(uint32_t * byteCode);
 void print_char(uint32_t c);
 void read_char(uint32_t * c);
 

@@ -23,7 +23,6 @@ typedef struct cpu{
 	uint32_t program_size;
 	uint32_t PC;
 
-	uint8_t shouldAdvance;
 	uint8_t syscallTermination;
 
 	registers_t registros;

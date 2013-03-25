@@ -113,7 +113,7 @@ void syscall(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t of
 			read_integer(&cpu.registros.v0);
 			break;
 		case SYS_EXIT:
-			exit1(cpu.byteCode);
+			cpu.syscallTermination = 1;
 			break;
 		case SYS_PRINT_CHAR:
 			print_char(cpu.registros.a0);
@@ -150,28 +150,19 @@ void andi(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 void beq(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	if (*rs == *rt)
-	{
-		cpu.PC += offset;
-		cpu.shouldAdvance = 0;
-	}
+		cpu.PC += (--offset) << 2;
 }
 
 void bgez(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	if ((*rs) >= 0)
-	{
-		cpu.PC += offset * 4;
-		cpu.shouldAdvance = 0;
-	}
+		cpu.PC += (--offset) << 2;
 }
 
 void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	if (*rs != *rt)
-	{
-		cpu.PC += offset * 4;
-		cpu.shouldAdvance = 0;
-	}
+		cpu.PC +=  (--offset) << 2;
 }
 
 void ori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -203,9 +194,5 @@ void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offs
 
 void j(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	/* Revisar el * 2 */
-	cpu.PC = (cpu.PC & 0xF0000000) | (direction/* << 2*/);
-	printf("Vamos a saltar a %.8x\n", cpu.PC);
-
-	cpu.shouldAdvance = 0;
+	cpu.PC = (cpu.PC & 0xF0000000) | direction;
 }
