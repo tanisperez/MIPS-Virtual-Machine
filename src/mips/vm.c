@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <malloc.h>
 #include <string.h>
+#include <elf.h>
 
 extern cpu_t cpu; //En alu.c
 
@@ -205,8 +206,6 @@ void interpretarInstruccion(uint32_t opcode)
 	int16_t offset = 0;
 	uint32_t direction = 0;
 
-	printf("codopt: %.2x, codopt2: %.2x\n", codopt, codopt2);
-
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{
 		if ((listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].tipo == 'J') //Tipo-J
@@ -261,37 +260,61 @@ void interpretarInstruccion(uint32_t opcode)
 */
 void interpretarArchivo(char * archivo)
 {
+	Elf32_Ehdr elf_header;
+	Elf32_Phdr prog_header;
 	FILE * source = NULL;
 	size_t itemsRead = 0;
 
 	if ((source = fopen(archivo, "r")) != NULL)
 	{
-		fseek(source, 0L, SEEK_END); //Nos situamos al final del archivo
-		cpu.program_size = ftell(source); //Obtenemos la posición del fichero, que es el tamaño del archivo
+		fread(&elf_header, sizeof(Elf32_Ehdr), 1, source);
 
-		cpu.byteCode = (uint32_t *) malloc((cpu.program_size / 4) * sizeof(uint32_t));
-		if (cpu.byteCode != NULL)
+		if (elf_header.e_ident[EI_MAG0] == ELFMAG0 && elf_header.e_ident[EI_MAG1] == ELFMAG1 &&
+			elf_header.e_ident[EI_MAG2] == ELFMAG2 && elf_header.e_ident[EI_MAG3] == ELFMAG3)
 		{
-			rewind(source); //Nos situamos al principio del archivo
-			itemsRead = fread(cpu.byteCode, 4, cpu.program_size / 4, source); //¿Aplicar un algoritmo voraz?
-			if (itemsRead == (cpu.program_size / 4))
+			if (elf_header.e_type == ET_EXEC)
 			{
-				cpu.PC = 0;
-				cpu.syscallTermination = 0;
-				memset(&cpu.registros, 0, sizeof(registers_t));
+				if (elf_header.e_machine == EM_MIPS_RS3_LE)
+				{
+					fread(&prog_header, sizeof(Elf32_Phdr), 1, source);
+					if (prog_header.p_type == PT_LOAD && prog_header.p_flags == (PF_X | PF_R))
+					{
+						cpu.program_size = prog_header.p_filesz;
 
-				signal(SIGINT, sigintEvent);
+						cpu.byteCode = (uint32_t *) malloc((cpu.program_size / 4) * sizeof(uint32_t));
+						if (cpu.byteCode != NULL)
+						{
+							itemsRead = fread(cpu.byteCode, 4, cpu.program_size / 4, source); //¿Aplicar un algoritmo voraz?
+							if (itemsRead == (cpu.program_size / 4))
+							{
+								cpu.PC = 0;
+								cpu.syscallTermination = 0;
+								memset(&cpu.registros, 0, sizeof(registers_t));
 
-				execute();
+								signal(SIGINT, sigintEvent);
 
-				liberarPrograma();
+								execute();
+
+								liberarPrograma();
+							}
+							else
+								printf("Error de lectura en el fichero \"%s\"\n", archivo);
+						}
+						else
+							printf("Error! No hay memoria suficiente para ejecutar el archivo \"%s\"\n", archivo);
+					}
+					else
+						printf("El segmento no contiene código ejecutable!\n");
+				}
+				else
+					printf("El código máquina de esta arquitectura no está soportado!\n");
 			}
 			else
-				printf("Error de lectura en el fichero \"%s\"\n", archivo);
+				printf("El fichero \"%s\" no es un fichero ejecutable!\n", archivo);
 		}
 		else
-			printf("Error! No hay memoria suficiente para ejecutar el archivo \"%s\"\n", archivo);
-
+			printf("El fichero \"%s\" no es un fichero elf válido!\n", archivo);
+		
 		fclose(source);
 	}
 	else

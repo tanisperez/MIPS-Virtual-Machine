@@ -4,6 +4,7 @@
 #include <mips.h>
 #include <programBuffer.h>
 #include <saltos.h>
+#include <elf.h>
 
 /* Funciones privadas */
 void generarBinario(char * destino);
@@ -23,9 +24,53 @@ buffer_t progBuffer;
 */
 void generarBinario(char * destino)
 {
+	Elf32_Ehdr elf_header;
+	Elf32_Phdr prog_header;
+
 	FILE * dest = fopen(destino, "w+");
 	if (dest != NULL)
 	{
+		/* 
+			http://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+			http://www.ouah.org/RevEng/x430.htm
+			http://linux.die.net/include/elf.h
+			http://man7.org/linux/man-pages/man5/elf.5.html 
+		*/
+		elf_header.e_ident[EI_MAG0] = ELFMAG0;
+		elf_header.e_ident[EI_MAG1] = ELFMAG1;
+		elf_header.e_ident[EI_MAG2] = ELFMAG2;
+		elf_header.e_ident[EI_MAG3] = ELFMAG3;
+
+		elf_header.e_type = ET_EXEC;						/* Object file type */
+		elf_header.e_machine = EM_MIPS_RS3_LE; 				/* MIPS R3000 little-endian */
+		elf_header.e_version = EV_CURRENT;					/* Object file version */
+		elf_header.e_entry = sizeof(Elf32_Ehdr) +			/* Virtual Entry Point */
+				sizeof(Elf32_Phdr);
+		elf_header.e_phoff = sizeof(Elf32_Ehdr); 			/* Program header table file offset */
+		elf_header.e_shoff = 0; 							/* Section header table file offset */
+		elf_header.e_flags = EF_MIPS_ARCH_2; 				/* Processor-specific flags */
+		elf_header.e_ehsize = sizeof(Elf32_Ehdr);			/* Elf elf_header size in bytes */
+		elf_header.e_phentsize = sizeof(Elf32_Phdr);		/* Program header table entry size */
+		elf_header.e_phnum = 1;								/* Program header table entry count */
+		elf_header.e_shentsize = 0;							/* Section header table entry size */
+		elf_header.e_shnum = 0;								/* Section header table entry count */
+		elf_header.e_shstrndx = 0;							/* Section header string table index */
+
+		fwrite(&elf_header, sizeof(Elf32_Ehdr), 1, dest);
+
+		prog_header.p_type = PT_LOAD;						/* Segment type */
+		prog_header.p_offset = sizeof(Elf32_Ehdr);			/* Segment file offset */
+		prog_header.p_vaddr	= sizeof(Elf32_Ehdr) + 			/* Segment virtual address */
+				sizeof(Elf32_Phdr);
+		prog_header.p_paddr	= sizeof(Elf32_Ehdr) +			/* Segment physical address */
+				sizeof(Elf32_Phdr);
+		prog_header.p_filesz = progBuffer.bufferUsado * 4;	/* Segment size in file */
+		prog_header.p_memsz = progBuffer.bufferUsado * 4;	/* Segment size in memory */
+		prog_header.p_flags = PF_X | PF_R;					/* Segment flags */
+		prog_header.p_align = 0;							/* Segment alignment */
+
+		fwrite(&prog_header, sizeof(Elf32_Phdr), 1, dest);
+
 		fwrite(progBuffer.buffer, sizeof(uint32_t), progBuffer.bufferUsado, dest);
 		fclose(dest);
 	}
@@ -122,7 +167,6 @@ void procesarCodigoFuente(FILE * source, char * destino)
 
 	while(fgets(linea, MAX_LINEA, source) != NULL)
 	{
-		//quitarSaltoLinea(linea);
 		quitarComentarios(linea);
 		minusculas(linea);
 
@@ -158,9 +202,6 @@ void procesarCodigoFuente(FILE * source, char * destino)
 
 	if (ok)
 		generarBinario(destino);	
-	
-	//listaSaltos_mostrar(&listaEtiquetasSalto);
-	//listaISaltos_mostrar(&listaInstruccionesSaltoDesconocido);
 
 	listaSaltos_vaciar(&listaEtiquetasSalto);
 	listaISaltos_vaciar(&listaInstruccionesSaltoDesconocido);

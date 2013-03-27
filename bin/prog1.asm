@@ -10,7 +10,7 @@ jr $t1
 salto:
 _1sal:
 yeah213213:
-puta$123wdw:
+p$123wdw:
 mfhi $t4
 mflo $t3
 syscall
