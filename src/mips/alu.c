@@ -1,3 +1,24 @@
+/*
+ *    File: alu.c
+ *	  Este módulo contiene todas las operaciones que puede realizar un procesador
+ *	  MIPS.
+ *
+ *    This program is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; version 2 of the License.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *    General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ *    02111-1307, USA.
+ *
+ */
+
 #include <alu.h>
 #include <vm.h>
 #include <stdio.h>
@@ -20,7 +41,7 @@ void add(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 
 void addu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	*rd = abs(*rs) + abs(*rt);
+	*rd = (*rs) + (*rt);
 }
 
 void and(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -36,8 +57,8 @@ void div(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 
 void divu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	cpu.registros.LO = abs(*rs) / abs(*rt);
-	cpu.registros.HI = abs(*rs) % abs(*rt);
+	cpu.registros.LO = (*rs) / (*rt);
+	cpu.registros.HI = (*rs) % (*rt);
 }
 
 void mfhi(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -57,12 +78,12 @@ void mult(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 
 void multu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	cpu.registros.LO = abs(*rs) * abs(*rt);
+	cpu.registros.LO = (*rs) * (*rt);
 }
 
-void nop(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+void nor(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-
+	*rd = ~((*rs) | (*rt));
 }
 
 void or(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -90,10 +111,44 @@ void slt(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 
 void sltu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	if (abs(*rs) < abs(*rt))
+	if ((*rs) < (*rt))
 		*rd = 1;
 	else
 		*rd = 0;
+}
+
+void sra(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	int i = 0;
+	int32_t signo = (*rt) & 0x80000000;
+	
+	for (; i < shamt; i++)
+	{
+		*rd = (*rt) >> 1;
+		*rd |= signo;
+	}
+}
+
+void srav(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	int i = 0;
+	int32_t signo = (*rt) & 0x80000000;
+	
+	for (; i < (*rs); i++)
+	{
+		*rd = (*rt) >> 1;
+		*rd |= signo;
+	}
+}
+
+void srl(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	*rd = (*rt) >> shamt;
+}
+
+void srlv(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	*rd = (*rt) >> (*rs);
 }
 
 void sub(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -103,7 +158,7 @@ void sub(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 
 void subu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	*rd = abs(*rs) - abs(*rt);
+	*rd = (*rs) - (*rt);
 }
 
 void xor(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -149,7 +204,7 @@ void addi(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 
 void addiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	*rt = abs(*rs) + abs(offset);
+	*rt = (*rs) + (offset);
 }
 
 void andi(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -208,7 +263,7 @@ void slti(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 
 void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	if (abs(*rs) < abs(offset))
+	if ((*rs) < (offset))
 		*rt = 1;
 	else
 		*rt = 0;

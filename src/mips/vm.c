@@ -1,3 +1,25 @@
+/*
+ *    File: vm.c
+ *	  Este módulo contiene todas las instrucciones del procesador MIPS.
+ *	  Procesa instrucción a instrucción un programa y ejecuta la función
+ *	  correspondiente de la alu.
+ *
+ *    This program is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; version 2 of the License.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *    General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ *    02111-1307, USA.
+ *
+ */
+
 #include <vm.h>
 #include <alu.h>
 #include <stdio.h>
@@ -32,20 +54,24 @@ opcode_t listaInstrucciones[] = {
 	{"and",		0x00, 'R', 0x24, and}, //and $d, $s, $t
 	{"div",		0x00, 'R', 0x1A, div}, //div $s, $t
 	{"divu",	0x00, 'R', 0x1B, divu}, //divu $s, $t
+	{"jalr",	0x00, 'R', 0x09, NULL}, //jalr $d, $s
 	{"jr",		0x00, 'R', 0x08, NULL}, //jr $s
 	{"mfhi",	0x00, 'R', 0x10, mfhi}, //mfhi $d
 	{"mflo",	0x00, 'R', 0x12, mflo}, //mflo $d
+	{"mthi",	0x00, 'R', 0x11, NULL}, //mthi $d
+	{"mtlo",	0x00, 'R', 0x13, NULL}, //mtlo $d
 	{"mult",	0x00, 'R', 0x18, mult}, //mult $s, $t
 	{"multu",	0x00, 'R', 0x19, multu}, //multu $s, $t
-	//{"nop",		0x00, 'R', 0x00, nop}, //nop
+	{"nor",		0x00, 'R', 0x27, nor}, //nor $d, $s, $t
 	{"or",		0x00, 'R', 0x25, or}, //or $d, $s, $t
 	{"sll",		0x00, 'R', 0x00, sll}, //sll $d, $t, h
 	{"sllv",	0x00, 'R', 0x04, sllv}, //sllv $d, $t, $s
 	{"slt",		0x00, 'R', 0x2A, slt}, //slt $d, $s, $t
 	{"sltu",	0x00, 'R', 0x2B, sltu}, //sltu $d, $s, $t
-	{"sra",		0x00, 'R', 0x03, NULL}, //sra $d, $t, h
-	{"srl",		0x00, 'R', 0x02, NULL}, //srl $d, $t, h
-	{"srlv",	0x00, 'R', 0x06, NULL}, //srlv $d, $t, $s
+	{"sra",		0x00, 'R', 0x03, sra}, //sra $d, $t, h
+	{"srav",	0x00, 'R', 0x07, srav}, //sra $d, $t, $s
+	{"srl",		0x00, 'R', 0x02, srl}, //srl $d, $t, h
+	{"srlv",	0x00, 'R', 0x06, srlv}, //srlv $d, $t, $s
 	{"sub",		0x00, 'R', 0x22, sub}, //sub $d, $s, $t
 	{"subu",	0x00, 'R', 0x23, subu}, //subu $d, $s, $t
 	{"xor",		0x00, 'R', 0x26, xor}, //xor $d, $s, $t

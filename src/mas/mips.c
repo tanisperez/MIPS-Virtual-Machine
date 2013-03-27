@@ -1,3 +1,26 @@
+/*
+ *    File: mips.c
+ *	  Contiene todas las instrucciones de la arquitectura MIPS, con sus códigos
+ *	  de operación, tipo de instrucción (R, J o I), código de función y número de parámetros.
+ *	  A partir de una cadena de instrucción, identifica que tipo de instrucción es y la pasa
+ *	  a código máquina.
+ *
+ *    This program is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; version 2 of the License.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *    General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ *    02111-1307, USA.
+ *
+ */
+
 #include <mips.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,18 +35,22 @@ opcode_t listaInstrucciones[] = {
 	{"and",		0x00, 'R', 0x24, 3}, //and $d, $s, $t
 	{"div",		0x00, 'R', 0x1A, 2}, //div $s, $t
 	{"divu",	0x00, 'R', 0x1B, 2}, //divu $s, $t
+	{"jalr",	0x00, 'R', 0x09, 2}, //jalr $d, $s
 	{"jr",		0x00, 'R', 0x08, 1}, //jr $s
 	{"mfhi",	0x00, 'R', 0x10, 1}, //mfhi $d
 	{"mflo",	0x00, 'R', 0x12, 1}, //mflo $d
+	{"mthi",	0x00, 'R', 0x11, 1}, //mthi $d
+	{"mtlo",	0x00, 'R', 0x13, 1}, //mtlo $d
 	{"mult",	0x00, 'R', 0x18, 2}, //mult $s, $t
 	{"multu",	0x00, 'R', 0x19, 2}, //multu $s, $t
-	{"nop",		0x00, 'R', 0x00, 0}, //nop
+	{"nor",		0x00, 'R', 0x27, 3}, //nor $d, $s, $t
 	{"or",		0x00, 'R', 0x25, 3}, //or $d, $s, $t
 	{"sll",		0x00, 'R', 0x00, 3}, //sll $d, $t, h
 	{"sllv",	0x00, 'R', 0x04, 3}, //sllv $d, $t, $s
 	{"slt",		0x00, 'R', 0x2A, 3}, //slt $d, $s, $t
 	{"sltu",	0x00, 'R', 0x2B, 3}, //sltu $d, $s, $t
 	{"sra",		0x00, 'R', 0x03, 3}, //sra $d, $t, h
+	{"srav",	0x00, 'R', 0x07, 3}, //srav $d, $t, $s
 	{"srl",		0x00, 'R', 0x02, 3}, //srl $d, $t, h
 	{"srlv",	0x00, 'R', 0x06, 3}, //srlv $d, $t, $s
 	{"sub",		0x00, 'R', 0x22, 3}, //sub $d, $s, $t

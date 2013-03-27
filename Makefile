@@ -13,5 +13,6 @@ clean:
 	rm -f bin/mas
 	rm -f bin/*.bin
 	rm -f bin/*.elf
+	rm -f a.out
 	$(MAKE) clean --directory=src/mas/
 	$(MAKE) clean --directory=src/mips/
