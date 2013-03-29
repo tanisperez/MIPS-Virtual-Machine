@@ -22,5 +22,4 @@
 
 #define MAS_VER	0.05
 
-
 #endif

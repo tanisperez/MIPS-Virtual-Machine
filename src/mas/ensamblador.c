@@ -20,13 +20,12 @@
  *
  */
 
-#include <ensamblador.h>
+#include "ensamblador.h"
 #include <stdio.h>
-#include <cadenas.h>
-#include <mips.h>
-#include <programBuffer.h>
-#include <saltos.h>
-#include <elf.h>
+#include "cadenas.h"
+#include "mips.h"
+#include "programBuffer.h"
+#include "saltos.h"
 
 /* Funciones privadas */
 void generarBinario(char * destino);

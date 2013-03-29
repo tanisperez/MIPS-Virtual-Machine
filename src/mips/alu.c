@@ -19,10 +19,10 @@
  *
  */
 
-#include <alu.h>
-#include <vm.h>
+#include "alu.h"
+#include "vm.h"
+#include "syscalls.h"
 #include <stdio.h>
-#include <syscalls.h>
 
 /* Variable global con los registros de la CPU,
    memoria, PC, etc.. */
@@ -61,6 +61,17 @@ void divu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 	cpu.registros.HI = (*rs) % (*rt);
 }
 
+void jalr(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	*rd = cpu.PC;
+	cpu.PC = *rs;
+}
+
+void jr(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	cpu.PC = cpu.registros.ra;
+}
+
 void mfhi(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	*rd = cpu.registros.HI;
@@ -69,6 +80,16 @@ void mfhi(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 void mflo(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	*rd = cpu.registros.LO;
+}
+
+void mthi(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	cpu.registros.HI = *rs;
+}
+
+void mtlo(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	cpu.registros.LO = *rs;
 }
 
 void mult(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -218,6 +239,15 @@ void beq(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 		cpu.PC += (--offset) << 2;
 }
 
+void bgezal(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if (*rs >= 0)
+	{
+		cpu.registros.ra = cpu.PC;
+		cpu.PC += (--offset) << 2;
+	}
+}
+
 void bgez(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	if ((*rs) >= 0)
@@ -240,6 +270,15 @@ void bltz(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 {
 	if ((*rs) < 0)
 		cpu.PC += (--offset) << 2;
+}
+
+void bltzal(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if (*rs < 0)
+	{
+		cpu.registros.ra = cpu.PC;
+		cpu.PC += (--offset) << 2;
+	}
 }
 
 void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -282,5 +321,11 @@ void xori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 
 void j(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
+	cpu.PC = (cpu.PC & 0xF0000000) | direction;
+}
+
+void jal(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	cpu.registros.ra = cpu.PC;
 	cpu.PC = (cpu.PC & 0xF0000000) | direction;
 }

@@ -1,5 +1,5 @@
 CC=gcc
-PARAMS=-O2 -I./
+PARAMS=-O2
 
 all: mas.o ensamblador.o mips.o saltos.o programBuffer.o cadenas.o
 	$(CC) $(PARAMS) mas.o ensamblador.o mips.o saltos.o programBuffer.o cadenas.o -o ../../bin/mas

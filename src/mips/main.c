@@ -20,7 +20,7 @@
  */
 
 #include <stdio.h>
-#include <definiciones.h>
+#include "definiciones.h"
 
 
 int main(int argc, char * argv[])

@@ -21,12 +21,12 @@
  *
  */
 
-#include <mips.h>
+#include "mips.h"
 #include <stdio.h>
 #include <string.h>
-#include <cadenas.h>
-#include <programBuffer.h>
-#include <saltos.h>
+#include "cadenas.h"
+#include "programBuffer.h"
+#include "saltos.h"
 
 opcode_t listaInstrucciones[] = {
 	/* Instrucciones Tipo-R */
@@ -39,8 +39,8 @@ opcode_t listaInstrucciones[] = {
 	{"jr",		0x00, 'R', 0x08, 1}, //jr $s
 	{"mfhi",	0x00, 'R', 0x10, 1}, //mfhi $d
 	{"mflo",	0x00, 'R', 0x12, 1}, //mflo $d
-	{"mthi",	0x00, 'R', 0x11, 1}, //mthi $d
-	{"mtlo",	0x00, 'R', 0x13, 1}, //mtlo $d
+	{"mthi",	0x00, 'R', 0x11, 1}, //mthi $s
+	{"mtlo",	0x00, 'R', 0x13, 1}, //mtlo $s
 	{"mult",	0x00, 'R', 0x18, 2}, //mult $s, $t
 	{"multu",	0x00, 'R', 0x19, 2}, //multu $s, $t
 	{"nor",		0x00, 'R', 0x27, 3}, //nor $d, $s, $t
@@ -84,7 +84,7 @@ opcode_t listaInstrucciones[] = {
 	{NULL, 		0x3F, '\0', 0x00, 0},
 	};
 
-register_t listaRegistros[] = {
+registro_t listaRegistros[] = {
 	{"$zero", 	"$0", 	0},
 	{"$at", 	"$1", 	1},
 	{"$v0", 	"$2", 	2},
@@ -122,7 +122,7 @@ register_t listaRegistros[] = {
 
 /* Funciones privadas */
 opcode_t obtenerOpcode(char * nombre);
-register_t obtenerRegistro(char * nombre);
+registro_t obtenerRegistro(char * nombre);
 int obtenerInstruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
 int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
 int obtenerInstruccionJ(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode);
@@ -161,12 +161,12 @@ opcode_t obtenerOpcode(char * nombre)
  * Busca en la lista de registros, la instrucción que coincida
  * en nombre o en número con el argumento dado.
  * Si no existe, devuelve un registro con los atributos:
- *    register_t registro = {NULL, NULL, 0};
+ *    registro_t registro = {NULL, NULL, 0};
 */
-register_t obtenerRegistro(char * nombre)
+registro_t obtenerRegistro(char * nombre)
 {
 	int i = 0;
-	register_t registro = {NULL, NULL, 0};
+	registro_t registro = {NULL, NULL, 0};
 
 	for (; listaRegistros[i].nombre != NULL; i++)
 		if (!strcmp(listaRegistros[i].nombre, nombre) || !strcmp(listaRegistros[i].numero, nombre))
@@ -181,7 +181,7 @@ register_t obtenerRegistro(char * nombre)
 int obtenerInstruccionR(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
 {
 	int resultado = 0;
-	register_t rt, rs, rd;
+	registro_t rt, rs, rd;
 	uint8_t desplazamiento = 0;
 
 	switch (numeroParametros - 1)
@@ -204,7 +204,7 @@ int obtenerInstruccionR(char * instruccion[], int numeroParametros, opcode_t cod
 		rd = obtenerRegistro(instruccion[1]);
 		if (rd.nombre != NULL)
 		{
-			if (codopt.codfunc == 0x08)
+			if (codopt.codfunc == 0x08 || codopt.codfunc == 0x011 || codopt.codfunc == 0x13)
 			{
 				rs.codigo = rd.codigo;
 				rd.codigo = 0x00;
@@ -323,7 +323,7 @@ int obtenerInstruccionR(char * instruccion[], int numeroParametros, opcode_t cod
 int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t codopt, uint32_t * opcode)
 {
 	int resultado = 0;
-	register_t rt, rs;
+	registro_t rt, rs;
 	uint32_t opcodeI = 0;
 	uint16_t inmediato = 0;
 	uint32_t direccionSalto = 0;
@@ -431,26 +431,23 @@ int obtenerInstruccionJ(char * instruccion[], int numeroParametros, opcode_t cod
 
 	if (numeroParametros == 2)
 	{
-		if (codopt.codopt == 0x02) //instrucción j
+		//Comprobar con esSalto la etiqueta de salto
+		if (esEtiquetaSalto(instruccion[1]))
 		{
-			//Comprobar con esSalto la etiqueta de salto
-			if (esEtiquetaSalto(instruccion[1]))
+			if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[1], &direccionSalto))
 			{
-				if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[1], &direccionSalto))
-				{
-					*opcode = (codopt.codopt << 26) | (0x03FFFFFF & direccionSalto);
-					resultado = 1;
-				}
-				else
-				{
-					listaISaltos_insertar(&listaInstruccionesSaltoDesconocido, instruccion[1], progBuffer.bufferUsado);
-					*opcode = (codopt.codopt << 26) | (0x00000000);
-					resultado = 1;
-				}
+				*opcode = (codopt.codopt << 26) | (0x03FFFFFF & direccionSalto);
+				resultado = 1;
 			}
 			else
-				printf("Error! La etiqueta de salto \"%s\" contiene caracteres inválidos!\n", instruccion[1]);
+			{
+				listaISaltos_insertar(&listaInstruccionesSaltoDesconocido, instruccion[1], progBuffer.bufferUsado);
+				*opcode = (codopt.codopt << 26) | (0x00000000);
+				resultado = 1;
+			}
 		}
+		else
+			printf("Error! La etiqueta de salto \"%s\" contiene caracteres inválidos!\n", instruccion[1]);
 	}
 
 	return resultado;

@@ -20,7 +20,7 @@
 #ifndef ENSAMBLADOR_H
 #define ENSAMBLADOR_H
 
-#include <stdio.h>
+#include <elf.h>
 
 #define MAX_LINEA 100
 
@@ -28,6 +28,10 @@
 #define TROZOS_UTILES 4
 
 #define MAX_FALLOS 7
+
+#ifndef EF_MIPS_ARCH_2
+ 	#define EF_MIPS_ARCH_2 0x10000000
+#endif
 
 void ensamblarArchivo(char * archivo, char * destino);
 

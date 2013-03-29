@@ -55,7 +55,7 @@ typedef struct reg{
 	char * nombre;
 	char * numero;
 	uint8_t codigo;
-} register_t;
+} registro_t;
 
 int obtenerInstruccion(char * instruccion[], int numeroParametros, uint32_t * opcode);
 

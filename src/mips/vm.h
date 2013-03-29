@@ -53,7 +53,7 @@ typedef struct reg{
 	char * nombre;
 	uint8_t codigo;
 	int32_t * reg_pointer;
-} register_t;
+} registro_t;
 
 
 /* Funciones públicas */

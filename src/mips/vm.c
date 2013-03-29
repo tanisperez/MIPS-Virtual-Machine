@@ -20,8 +20,8 @@
  *
  */
 
-#include <vm.h>
-#include <alu.h>
+#include "vm.h"
+#include "alu.h"
 #include <stdio.h>
 #include <signal.h>
 #include <malloc.h>
@@ -54,12 +54,12 @@ opcode_t listaInstrucciones[] = {
 	{"and",		0x00, 'R', 0x24, and}, //and $d, $s, $t
 	{"div",		0x00, 'R', 0x1A, div}, //div $s, $t
 	{"divu",	0x00, 'R', 0x1B, divu}, //divu $s, $t
-	{"jalr",	0x00, 'R', 0x09, NULL}, //jalr $d, $s
-	{"jr",		0x00, 'R', 0x08, NULL}, //jr $s
+	{"jalr",	0x00, 'R', 0x09, jalr}, //jalr $d, $s
+	{"jr",		0x00, 'R', 0x08, jr}, //jr $s
 	{"mfhi",	0x00, 'R', 0x10, mfhi}, //mfhi $d
 	{"mflo",	0x00, 'R', 0x12, mflo}, //mflo $d
-	{"mthi",	0x00, 'R', 0x11, NULL}, //mthi $d
-	{"mtlo",	0x00, 'R', 0x13, NULL}, //mtlo $d
+	{"mthi",	0x00, 'R', 0x11, mthi}, //mthi $s
+	{"mtlo",	0x00, 'R', 0x13, mtlo}, //mtlo $s
 	{"mult",	0x00, 'R', 0x18, mult}, //mult $s, $t
 	{"multu",	0x00, 'R', 0x19, multu}, //multu $s, $t
 	{"nor",		0x00, 'R', 0x27, nor}, //nor $d, $s, $t
@@ -82,11 +82,11 @@ opcode_t listaInstrucciones[] = {
 	{"andi",	0x0C, 'I', 0x00, andi}, //andi $t, $s, imm
 	{"beq",		0x04, 'I', 0x00, beq}, //beq $s, $t, offset
 	{"bgez",	0x01, 'I', 0x01, bgez}, //bgez $s, offset
-	{"bgezal",	0x01, 'I', 0x11, NULL}, //bgezal $s, offset
+	{"bgezal",	0x01, 'I', 0x11, bgezal}, //bgezal $s, offset
 	{"bgtz",	0x07, 'I', 0x00, bgtz}, //bgtz $s, offset
 	{"blez",	0x06, 'I', 0x00, blez}, //blez $s, offset
+	{"bltzal",	0x01, 'I', 0x10, bltzal}, //bltzal $s, offset
 	{"bltz",	0x01, 'I', 0x00, bltz}, //bltz $s, offset
-	{"bltzal",	0x01, 'I', 0x10, NULL}, //bltzal $s, offset
 	{"bne",		0x05, 'I', 0x00, bne}, //bne $s, $t, offset
 	{"lb",		0x20, 'I', 0x00, NULL}, //lb $t, offset($s)
 	{"lui",		0x0F, 'I', 0x00, NULL}, //lui $t, imm
@@ -99,13 +99,13 @@ opcode_t listaInstrucciones[] = {
 	{"xori",	0x0E, 'I', 0x00, xori}, //xori $t, $s, imm
 	/* Instrucciones Tipo-J */
 	{"j",		0x02, 'J', 0x00, j}, //j target
-	{"jal",		0x03, 'J', 0x00, NULL}, //jal target
+	{"jal",		0x03, 'J', 0x00, jal}, //jal target
 	{NULL, 		0x3F, '\0', 0x00, NULL},
 	};
 
 /* Lista de registros con su nombre, su número de registro(son 32)
    y el puntero al registro de la CPU al que hacen referencia. */
-register_t listaRegistros[REG_COUNT] = {
+registro_t listaRegistros[REG_COUNT] = {
 	{"$zero", 	0,	&cpu.registros.zero},
 	{"$at", 	1,	&cpu.registros.at},
 	{"$v0", 	2,	&cpu.registros.v0},
@@ -126,7 +126,7 @@ register_t listaRegistros[REG_COUNT] = {
 	{"$s1", 	17,	&cpu.registros.s1},
 	{"$s2", 	18,	&cpu.registros.s2},
 	{"$s3", 	19,	&cpu.registros.s3},
-	{"$s4", 	20, &cpu.registros.s4},
+	{"$s4", 	20,	&cpu.registros.s4},
 	{"$s5", 	21,	&cpu.registros.s5},
 	{"$s6", 	22,	&cpu.registros.s6},
 	{"$s7", 	23,	&cpu.registros.s7},
@@ -231,6 +231,8 @@ void interpretarInstruccion(uint32_t opcode)
 	uint8_t shamt = 0, temp = 0;
 	int16_t offset = 0;
 	uint32_t direction = 0;
+
+	printf("codopt: %.2x, codopt2: %.2x\n", codopt, codopt2);
 
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{

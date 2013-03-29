@@ -19,10 +19,10 @@
  *
  */
 
+#include "definiciones.h"
+#include "ensamblador.h"
 #include <stdio.h>
 #include <getopt.h>
-#include <ensamblador.h>
-#include <definiciones.h>
 
 /*
  * Función imprimirUso.
@@ -54,7 +54,7 @@ int main(int argc, char * argv[])
 		{
 			case 'h':
 				imprimirUso();
-				break;
+				return 1;
 			case 'o':
 				salida = optarg;
 				break;

@@ -1,5 +1,5 @@
 CC=gcc
-PARAMS=-O2 -I./
+PARAMS=-O2
 
 all: main.o vm.o alu.o syscalls.o
 	$(CC) $(PARAMS) main.o vm.o alu.o syscalls.o -o ../../bin/mips
