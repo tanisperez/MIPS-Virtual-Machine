@@ -25,6 +25,7 @@
 #include "cadenas.h"
 #include "mips.h"
 #include "programBuffer.h"
+#include "dataBuffer.h"
 #include "saltos.h"
 
 /* Funciones privadas */
@@ -37,6 +38,8 @@ void procesarCodigoFuente(FILE * source, char * destino);
 saltos_list_t listaEtiquetasSalto;
 i_saltos_list_t listaInstruccionesSaltoDesconocido;
 buffer_t progBuffer;
+data_buffer_t dataBuffer;
+uint8_t tipoSeccion;
 
 /*
  * Función generarBinario.
@@ -183,8 +186,10 @@ void procesarCodigoFuente(FILE * source, char * destino)
 	unsigned int ok = 1, numFallos = 0;
 
 	buffer_init(&progBuffer);
+	data_buffer_init(&dataBuffer);
 	listaSaltos_crear(&listaEtiquetasSalto);
 	listaISaltos_crear(&listaInstruccionesSaltoDesconocido);
+	tipoSeccion = SECCION_NULL;
 
 	while(fgets(linea, MAX_LINEA, source) != NULL)
 	{
@@ -195,25 +200,49 @@ void procesarCodigoFuente(FILE * source, char * destino)
 		numeroTrozos = trocearCadena(linea, trozos, MAX_TROZOS);
 		if (numeroTrozos > 0)
 		{
-			if (esSalto(trozos[0]))
-			{
-				listaSaltos_insertar(&listaEtiquetasSalto, trozos[0], progBuffer.bufferUsado * 4);
-			}
+			if (strcmp(trozos[0], ".text") == 0)
+				tipoSeccion = SECCION_TEXT;
 			else
-			{
-				if (numeroTrozos <= TROZOS_UTILES)
+				if (strcmp(trozos[0], ".data") == 0)
+					tipoSeccion = SECCION_DATA;
+				else
 				{
-					if (!(escribirInstruccionBuffer(trozos, numeroTrozos, numLinea, &progBuffer)))
+					switch (tipoSeccion)
 					{
-						ok = 0;
-						if ((numFallos++) == MAX_FALLOS)
+						case SECCION_NULL:
+							printf("Línea %d: Error! Sintaxis no reconocida, recuerde declarar las secciones!\n", numLinea);
+							break;
+						case SECCION_TEXT:
+							if (esSalto(trozos[0]))
+							{
+								listaSaltos_insertar(&listaEtiquetasSalto, trozos[0], progBuffer.bufferUsado * 4);
+							}
+							else
+							{
+								if (numeroTrozos <= TROZOS_UTILES)
+								{
+									if (!(escribirInstruccionBuffer(trozos, numeroTrozos, numLinea, &progBuffer)))
+									{
+										ok = 0;
+										if ((numFallos++) == MAX_FALLOS)
+											break;
+									}
+								}
+								else
+									printf("Línea %d: Error! \"%s\" no es una instrucción válida!\n", numLinea, trozos[0]);
+							}
+							break;
+						case SECCION_DATA:
+								if (esVariable(trozos[0]))
+								{
+									printf("Variable %s de tipo %s, con contenido = %s\n", trozos[0], trozos[1], trozos[2]);
+									//data_buffer_write(&dataBuffer, &numLinea, sizeof(numLinea));
+								}
+								else
+									printf("Línea %d: Error! \"%s\" no es un identificador de variable válido!\n", numLinea, trozos[0]);
 							break;
 					}
-				}
-				else
-					printf("Línea %d: Error! \"%s\" no es una instrucción válida!\n", numLinea, trozos[0]);
-			}
-
+				}	
 		}
 
 		numLinea++;		
@@ -227,6 +256,7 @@ void procesarCodigoFuente(FILE * source, char * destino)
 	listaSaltos_vaciar(&listaEtiquetasSalto);
 	listaISaltos_vaciar(&listaInstruccionesSaltoDesconocido);
 	buffer_free(&progBuffer);
+	data_buffer_free(&dataBuffer);
 }
 
 

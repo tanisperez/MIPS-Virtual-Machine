@@ -191,3 +191,13 @@ int esEtiquetaSalto(const char * linea)
 	return match(linea, "^[_a-z][0-9a-z_]+");
 }
 
+
+/*
+ * Función: esVariable.
+ * Determina si una cadena es un identificador de variable válido.
+*/
+ int esVariable(const char * linea)
+ {
+ 	return match(linea, "^[a-z][0-9a-z_]*:");
+ }
+

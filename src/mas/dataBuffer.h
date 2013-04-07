@@ -1,5 +1,6 @@
 /*
- *    File: ensamblador.h
+ *    File: programBuffer.h
+ *	  Incluye los prototipos de funciones y tipos del módulo dataBuffer.c
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -17,27 +18,24 @@
  *
  */
 
-#ifndef ENSAMBLADOR_H
-#define ENSAMBLADOR_H
+#ifndef DATABUFFER_H
+#define DATABUFFER_H
 
-#include <elf.h>
+#include <stdint.h>
 
-#define MAX_LINEA 100
+/* 1024 bytes */
+#define DEFAULT_SIZE	1024
 
-#define MAX_TROZOS 10
-#define TROZOS_UTILES 4
+typedef struct data_buffer_ {
+	uint8_t * buffer;
 
-#define MAX_FALLOS 7
+	uint32_t tamBuffer; //Tamaño del buffer en bytes
+	uint32_t bufferUsado; //Número de bytes consumidoss
+} data_buffer_t;
 
-#define SECCION_NULL	0
-#define SECCION_TEXT	1
-#define SECCION_DATA	2
 
-#ifndef EF_MIPS_ARCH_2
- 	#define EF_MIPS_ARCH_2 0x10000000
-#endif
-
-void ensamblarArchivo(char * archivo, char * destino);
-
+void data_buffer_init(data_buffer_t * d);
+void data_buffer_write(data_buffer_t * d, void * dato, uint32_t tam);
+void data_buffer_free(data_buffer_t * d);
 
 #endif

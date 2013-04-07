@@ -1,6 +1,6 @@
 /*
  *    File: programBuffer.h
- *	  Incluye una serie de funciones para operar con cadenas.
+ *	  Incluye los prototipos de funciones y tipos del módulo programBuffer.c
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by

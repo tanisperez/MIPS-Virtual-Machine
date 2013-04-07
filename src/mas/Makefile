@@ -1,8 +1,8 @@
 CC=gcc
 PARAMS=-O2
 
-all: mas.o ensamblador.o mips.o saltos.o programBuffer.o cadenas.o
-	$(CC) $(PARAMS) mas.o ensamblador.o mips.o saltos.o programBuffer.o cadenas.o -o ../../bin/mas
+all: mas.o ensamblador.o mips.o saltos.o programBuffer.o cadenas.o dataBuffer.o
+	$(CC) $(PARAMS) mas.o ensamblador.o mips.o saltos.o programBuffer.o cadenas.o dataBuffer.o -o ../../bin/mas
 
 mas.o: mas.c
 	$(CC) $(PARAMS) -c mas.c
@@ -22,8 +22,11 @@ programBuffer.o: programBuffer.c programBuffer.h
 cadenas.o: cadenas.c cadenas.h
 	$(CC) $(PARAMS) -c cadenas.c
 
+dataBuffer.o: dataBuffer.c dataBuffer.h
+	$(CC) $(PARAMS) -c dataBuffer.c
+
 debug:
-	$(CC) $(PARAMS) -g mas.c ensamblador.c mips.c saltos.c programBuffer.c cadenas.c -o ../../bin/mas
+	$(CC) $(PARAMS) -g mas.c ensamblador.c mips.c saltos.c programBuffer.c cadenas.c dataBuffer.o -o ../../bin/mas
 
 clean:
 	rm *.o

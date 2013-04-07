@@ -46,7 +46,7 @@ void buffer_init(buffer_t * b)
 	if (b->buffer != NULL)
 		b->tamBuffer = DEFAULT_SIZE;
 	else
-		printf("Error! No se pudo reservar memoria con realloc en buffer_init()!\n");
+		printf("Error! No se pudo reservar memoria con malloc en buffer_init()!\n");
 }
 
 
@@ -90,7 +90,7 @@ void buffer_addOpcode(buffer_t * b, uint32_t opcode)
 		b->bufferUsado++;
 	}
 	else
-		printf("Error! No se pudo reservar memoria con realloc en buffer_addOpcode()!\n");
+		printf("Error! La función buffer_addOpcode recibió un puntero nulo!\n");
 }
 
 
