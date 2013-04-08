@@ -24,6 +24,11 @@
 #include <ctype.h>
 #include <regex.h>
 
+/* Prototipos de funciones privadas */
+void * obtenerWordPtr(char * cadena);
+void * obtenerFloatPtr(char * cadena);
+void * obtenerAsciizPtr(char * cadena);
+
 /*
  * Función strToUINT16.
  * Convierte una cadena de caracteres en un número de 16 bits sin signo.
@@ -139,7 +144,6 @@ void vaciarTrozos(char * trozos[], int maxTrozos)
 }
 
 
-
  /*
   * Función match.
   * Comprueba si coincide la cadena string con la
@@ -201,3 +205,66 @@ int esEtiquetaSalto(const char * linea)
  	return match(linea, "^[a-z][0-9a-z_]*:");
  }
 
+
+
+tipos_dato_t tipos[] = {
+	{".word", 	TYPE_WORD,		sizeof(uint16_t),	obtenerWordPtr},
+	{".float", 	TYPE_FLOAT,		sizeof(float), 		obtenerFloatPtr},
+	{".asciiz",	TYPE_ASCIIZ,	sizeof(char),		obtenerAsciizPtr},
+	{NULL,		TYPE_NULL,		0, 					NULL}
+};
+
+
+
+void * obtenerPunteroADato(const char * tipo, const char * cadena, uint32_t * tam)
+{
+	int i = 0;
+
+	for (; tipos[i].nombre != NULL; i++)
+	{
+		if (strcmp(tipos[i].nombre, tipo) == 0)
+		{
+			if (tipos[i].flag == TYPE_ASCIIZ)
+				*tam = strlen(cadena) - 2;
+			else
+				*tam = tipos[i].tam;
+
+			if (tipos[i].obtenerVar != NULL)
+				return tipos[i].obtenerVar(cadena);
+			else
+			{
+				printf("Función sin implementar para el tipo de datos: %s\n", tipos[i].nombre);
+				break;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+
+void * obtenerWordPtr(char * cadena)
+{
+	static uint16_t temp = 0;
+
+	if (sscanf(cadena, "%d", &temp) == 1)
+		return &temp;
+	else
+		return NULL;
+}
+
+void * obtenerFloatPtr(char * cadena)
+{
+	static float temp = 0;
+
+	if (sscanf(cadena, "%f", &temp) == 1)
+		return &temp;
+	else
+		return NULL;
+}
+
+void * obtenerAsciizPtr(char * cadena)
+{
+	cadena[strlen(cadena) - 1] = NULL;
+	return (++cadena);
+}

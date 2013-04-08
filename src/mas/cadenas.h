@@ -22,6 +22,19 @@
 
 #include <stdint.h>
 
+typedef struct tipos_dato_{
+	char * nombre;
+	uint8_t flag;
+	uint32_t tam;
+
+	void * (*obtenerVar)(char * cadena);
+} tipos_dato_t;
+
+#define TYPE_NULL	0
+#define TYPE_WORD	1
+#define TYPE_FLOAT	2
+#define TYPE_ASCIIZ	3
+
 int strToUINT16(char * cadena, uint16_t * inmediato);
 int strToUINT8(char * cadena, uint8_t * desplazamiento);
 
@@ -38,5 +51,7 @@ int match(const char * string, char * pattern);
 int esSalto(const char * linea);
 int esEtiquetaSalto(const char * linea);
 int esVariable(const char * linea);
+
+void * obtenerPunteroADato(const char * tipo, const char * cadena, uint32_t * tam);
 
 #endif

@@ -1,6 +1,6 @@
 /*
  *    File: saltos.h
- *	  Incluye una serie de funciones para operar con cadenas.
+ *	  Esta cabecera define los prototipos y tipos de datos utilizados.
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by

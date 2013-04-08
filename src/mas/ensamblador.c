@@ -17,7 +17,6 @@
  *    along with this program; if not, write to the Free Software
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *    02111-1307, USA.
- *
  */
 
 #include "ensamblador.h"
@@ -27,6 +26,7 @@
 #include "programBuffer.h"
 #include "dataBuffer.h"
 #include "saltos.h"
+#include "variables.h"
 
 /* Funciones privadas */
 void generarBinario(char * destino);
@@ -37,6 +37,7 @@ void procesarCodigoFuente(FILE * source, char * destino);
 /* Variables globales */
 saltos_list_t listaEtiquetasSalto;
 i_saltos_list_t listaInstruccionesSaltoDesconocido;
+variables_list_t listaEtiquetasVariable;
 buffer_t progBuffer;
 data_buffer_t dataBuffer;
 uint8_t tipoSeccion;
@@ -75,7 +76,7 @@ void generarBinario(char * destino)
 		elf_header.e_flags = EF_MIPS_ARCH_2; 				/* Processor-specific flags */
 		elf_header.e_ehsize = sizeof(Elf32_Ehdr);			/* Elf elf_header size in bytes */
 		elf_header.e_phentsize = sizeof(Elf32_Phdr);		/* Program header table entry size */
-		elf_header.e_phnum = 1;								/* Program header table entry count */
+		elf_header.e_phnum = 1 + (dataBuffer.bufferUsado > 0);	/* Program header table entry count */
 		elf_header.e_shentsize = 0;							/* Section header table entry size */
 		elf_header.e_shnum = 0;								/* Section header table entry count */
 		elf_header.e_shstrndx = 0;							/* Section header string table index */
@@ -95,7 +96,19 @@ void generarBinario(char * destino)
 
 		fwrite(&prog_header, sizeof(Elf32_Phdr), 1, dest);
 
+		prog_header.p_type = PT_NOTE;
+		prog_header.p_offset = sizeof(Elf32_Ehdr) + sizeof(Elf32_Phdr);
+		//prog_header.p_vaddr = 
+		//prog_header.p_paddr =
+		prog_header.p_filesz = dataBuffer.bufferUsado;
+		prog_header.p_memsz = dataBuffer.bufferUsado;
+		prog_header.p_flags = PF_R;
+		prog_header.p_align = 0;
+
+		fwrite(&prog_header, sizeof(Elf32_Phdr), 1, dest);
+
 		fwrite(progBuffer.buffer, sizeof(uint32_t), progBuffer.bufferUsado, dest);
+		fwrite(dataBuffer.buffer, dataBuffer.bufferUsado, 1, dest);
 		fclose(dest);
 	}
 	else
@@ -182,13 +195,18 @@ void procesarCodigoFuente(FILE * source, char * destino)
 {
 	static char linea[MAX_LINEA];
 	char * trozos[MAX_TROZOS];
+	unsigned int i = 0;
 	unsigned int numeroTrozos = 0, numLinea = 1;
 	unsigned int ok = 1, numFallos = 0;
+
+	void * dato = NULL;
+	uint32_t tam = 0;
 
 	buffer_init(&progBuffer);
 	data_buffer_init(&dataBuffer);
 	listaSaltos_crear(&listaEtiquetasSalto);
 	listaISaltos_crear(&listaInstruccionesSaltoDesconocido);
+	listaVariables_crear(&listaEtiquetasVariable);
 	tipoSeccion = SECCION_NULL;
 
 	while(fgets(linea, MAX_LINEA, source) != NULL)
@@ -233,10 +251,19 @@ void procesarCodigoFuente(FILE * source, char * destino)
 							}
 							break;
 						case SECCION_DATA:
-								if (esVariable(trozos[0]))
+								if (esVariable(trozos[0]) && numeroTrozos >= 3)
 								{
-									printf("Variable %s de tipo %s, con contenido = %s\n", trozos[0], trozos[1], trozos[2]);
-									//data_buffer_write(&dataBuffer, &numLinea, sizeof(numLinea));
+									listaVariables_insertar(&listaEtiquetasVariable, trozos[0], dataBuffer.bufferUsado);
+									for (i = 2; i < numeroTrozos; i++)
+									{
+										dato = obtenerPunteroADato(trozos[1], trozos[i], &tam);
+										if (dato != NULL)
+										{
+											data_buffer_write(&dataBuffer, dato, tam);
+										}
+										else
+											printf("Error, no se pudo obtener el puntero al dato\n");
+									}
 								}
 								else
 									printf("Línea %d: Error! \"%s\" no es un identificador de variable válido!\n", numLinea, trozos[0]);
@@ -251,10 +278,12 @@ void procesarCodigoFuente(FILE * source, char * destino)
 	recorrerListaInstruccionesSaltoDesconocido();
 
 	if (ok)
-		generarBinario(destino);	
+		generarBinario(destino);
 
 	listaSaltos_vaciar(&listaEtiquetasSalto);
 	listaISaltos_vaciar(&listaInstruccionesSaltoDesconocido);
+	listaVariables_vaciar(&listaEtiquetasVariable);
+
 	buffer_free(&progBuffer);
 	data_buffer_free(&dataBuffer);
 }
