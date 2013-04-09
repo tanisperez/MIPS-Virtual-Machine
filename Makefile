@@ -8,6 +8,11 @@ debug:
 	$(MAKE) debug --directory=src/mips/
 	@echo BUILD SUCCESSFULL! [DEBUG MODE]
 
+valgrind:
+	$(MAKE) valgrind --directory=src/mas/
+	$(MAKE) valgrind --directory=src/mips/
+	@echo BUILD SUCCESSFULL! [VALGRIND MODE]
+
 clean:
 	rm -f bin/mips
 	rm -f bin/mas

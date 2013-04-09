@@ -1,6 +1,6 @@
 /*
- *    File: definiciones.h
- *	  Incluye una serie de funciones para operar con cadenas.
+ *    Archivo: definiciones.h
+ *	  Define directivas globales para el programa.
  *
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #ifndef DEFINICIONES_H
 #define DEFINICIONES_H
 
-#define MIPS_VER	0.04
+#define MIPS_VER	0.05
 
 
 #endif

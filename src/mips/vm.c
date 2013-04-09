@@ -89,7 +89,7 @@ opcode_t listaInstrucciones[] = {
 	{"bltz",	0x01, 'I', 0x00, bltz}, //bltz $s, offset
 	{"bne",		0x05, 'I', 0x00, bne}, //bne $s, $t, offset
 	{"lb",		0x20, 'I', 0x00, NULL}, //lb $t, offset($s)
-	{"lui",		0x0F, 'I', 0x00, NULL}, //lui $t, imm
+	{"lui",		0x0F, 'I', 0x00, lui}, //lui $t, imm
 	{"lw",		0x23, 'I', 0x00, NULL}, //lw $t, offset($s)
 	{"ori",		0x0D, 'I', 0x00, ori}, //ori $t, $s, imm
 	{"sb",		0x28, 'I', 0x00, NULL}, //sb $t, offset($s)
@@ -159,7 +159,7 @@ void sigintEvent()
 */
 void visualizarCPUInfo()
 {
-	printf("\nMIPS Virtual Machine\n");
+	printf("\nMIPS Virtual Machine Registers\n");
 	printf("v0: %.8x v1: %.8x\n", cpu.registros.v0, cpu.registros.v1);
 	printf("a0: %.8x a1: %.8x a2: %.8x a3: %.8x\n", cpu.registros.a0, 
 		cpu.registros.a1, cpu.registros.a2, cpu.registros.a3);
@@ -190,7 +190,9 @@ void execute()
 	while (cpu.PC < cpu.program_size && cpu.syscallTermination == 0)
 	{
 		opcode = cpu.byteCode[cpu.PC >> 2]; //Dividimos entre 4
-		printf("PC: %.8x Opcode: %.8x\n", cpu.PC, opcode);
+		#ifdef DEBUG
+			printf("PC: %.8x Opcode: %.8x\n", cpu.PC, opcode);
+		#endif
 
 		cpu.PC += 4;
 
@@ -210,6 +212,8 @@ void execute()
 void liberarPrograma()
 {
 	free(cpu.byteCode);
+	if (cpu.memory != NULL)
+		free(cpu.memory);
 }
 
 
@@ -232,8 +236,6 @@ void interpretarInstruccion(uint32_t opcode)
 	int16_t offset = 0;
 	uint32_t direction = 0;
 
-	printf("codopt: %.2x, codopt2: %.2x\n", codopt, codopt2);
-
 	for (; listaInstrucciones[i].operacion != NULL; i++)
 	{
 		if ((listaInstrucciones[i].codopt == codopt && listaInstrucciones[i].tipo == 'J') //Tipo-J
@@ -248,7 +250,10 @@ void interpretarInstruccion(uint32_t opcode)
 				printf("Función %s sin implementar o desconocida!\n", listaInstrucciones[i].operacion);
 			else
 			{
-				printf("Instrucción: %s\n", listaInstrucciones[i].operacion);
+				#ifdef DEBUG
+					printf("Instrucción: %s\n", listaInstrucciones[i].operacion);
+				#endif
+
 				switch (listaInstrucciones[i].tipo)
 				{
 					case 'R':
@@ -288,10 +293,17 @@ void interpretarInstruccion(uint32_t opcode)
 */
 void interpretarArchivo(char * archivo)
 {
+	int i = 0;
 	Elf32_Ehdr elf_header;
 	Elf32_Phdr prog_header;
 	FILE * source = NULL;
 	size_t itemsRead = 0;
+	long currentPos = 0;
+
+	cpu.program_size = 0;
+	cpu.memory_size = 0;
+	cpu.byteCode = NULL;
+	cpu.memory = NULL;
 
 	if ((source = fopen(archivo, "r")) != NULL)
 	{
@@ -304,35 +316,60 @@ void interpretarArchivo(char * archivo)
 			{
 				if (elf_header.e_machine == EM_MIPS_RS3_LE)
 				{
-					fread(&prog_header, sizeof(Elf32_Phdr), 1, source);
-					if (prog_header.p_type == PT_LOAD && prog_header.p_flags == (PF_X | PF_R))
+					for (; i < elf_header.e_phnum; i++)
 					{
-						cpu.program_size = prog_header.p_filesz;
+						fread(&prog_header, sizeof(prog_header), 1, source);
+						currentPos = ftell(source);
 
-						cpu.byteCode = (uint32_t *) malloc((cpu.program_size / 4) * sizeof(uint32_t));
-						if (cpu.byteCode != NULL)
+						if (prog_header.p_type == PT_LOAD && prog_header.p_flags == (PF_X | PF_R) && cpu.byteCode == NULL)
 						{
-							itemsRead = fread(cpu.byteCode, 4, cpu.program_size / 4, source); //¿Aplicar un algoritmo voraz?
-							if (itemsRead == (cpu.program_size / 4))
+							cpu.program_size = prog_header.p_filesz;
+
+							cpu.byteCode = (uint32_t *) malloc((cpu.program_size / 4) * sizeof(uint32_t));
+							if (cpu.byteCode != NULL)
 							{
-								cpu.PC = 0;
-								cpu.syscallTermination = 0;
-								memset(&cpu.registros, 0, sizeof(registers_t));
+								fseek(source, prog_header.p_paddr, SEEK_SET);
+								itemsRead = fread(cpu.byteCode, 4, cpu.program_size / 4, source); //¿Aplicar un algoritmo voraz?
+								if (itemsRead != (cpu.program_size / 4))
+									printf("Error de lectura en el fichero \"%s\"\n", archivo);
 
-								signal(SIGINT, sigintEvent);
-
-								execute();
-
-								liberarPrograma();
 							}
 							else
-								printf("Error de lectura en el fichero \"%s\"\n", archivo);
+								printf("Error! No hay memoria suficiente para ejecutar el archivo \"%s\"\n", archivo);
 						}
 						else
-							printf("Error! No hay memoria suficiente para ejecutar el archivo \"%s\"\n", archivo);
+						{
+							if (prog_header.p_type == PT_NOTE && prog_header.p_flags == PF_R && cpu.memory == NULL)
+							{
+								cpu.memory_size = prog_header.p_filesz;
+
+								cpu.memory = (uint8_t *) malloc(cpu.memory_size);
+								if (cpu.memory != NULL)
+								{
+									fseek(source, prog_header.p_paddr, SEEK_SET);
+									itemsRead = fread(cpu.memory, sizeof(uint8_t), cpu.memory_size, source);
+									if (itemsRead != cpu.memory_size)
+										printf("Error de lectura en el fichero \"%s\"\n", archivo);	
+								}
+								else
+									printf("Error! No hay memoria suficiente para ejecutar el archivo \"%s\"\n", archivo);
+							}
+							else
+								printf("El segmento no es válido!\n");
+						}
+
+						fseek(source, currentPos, SEEK_SET);
 					}
-					else
-						printf("El segmento no contiene código ejecutable!\n");
+
+					cpu.PC = 0;
+					cpu.syscallTermination = 0;
+					memset(&cpu.registros, 0, sizeof(registers_t));
+
+					signal(SIGINT, sigintEvent);
+
+					execute();
+
+					liberarPrograma();
 				}
 				else
 					printf("El código máquina de esta arquitectura no está soportado!\n");

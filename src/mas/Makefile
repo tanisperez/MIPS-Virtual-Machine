@@ -1,6 +1,8 @@
+#Makefile for Mips ASsembler
 CC=gcc
 PARAMS=-O2
 OBJECTS=mas.o ensamblador.o mips.o saltos.o programBuffer.o cadenas.o dataBuffer.o variables.o
+SOURCES=mas.c ensamblador.c mips.c saltos.c programBuffer.c cadenas.c dataBuffer.c variables.c
 
 all: $(OBJECTS)
 	$(CC) $(PARAMS) $(OBJECTS) -o ../../bin/mas
@@ -30,7 +32,10 @@ variables.o: variables.c variables.h
 	$(CC) $(PARAMS) -c variables.c
 
 debug:
-	$(CC) $(PARAMS) -g mas.c ensamblador.c mips.c saltos.c programBuffer.c cadenas.c dataBuffer.c variables.c -o ../../bin/mas
+	$(CC) $(PARAMS) -g -DDEBUG $(SOURCES) -o ../../bin/mas
+
+valgrind:
+	$(CC) $(PARAMS) -g $(SOURCES) -o ../../bin/mas
 
 clean:
 	rm *.o

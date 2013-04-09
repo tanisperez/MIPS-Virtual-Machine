@@ -75,8 +75,9 @@ void generarBinario(char * destino)
 		elf_header.e_shoff = 0; 							/* Section header table file offset */
 		elf_header.e_flags = EF_MIPS_ARCH_2; 				/* Processor-specific flags */
 		elf_header.e_ehsize = sizeof(Elf32_Ehdr);			/* Elf elf_header size in bytes */
-		elf_header.e_phentsize = sizeof(Elf32_Phdr);		/* Program header table entry size */
 		elf_header.e_phnum = 1 + (dataBuffer.bufferUsado > 0);	/* Program header table entry count */
+		elf_header.e_phentsize = sizeof(Elf32_Phdr) 		/* Program header table entry size */
+				* elf_header.e_phnum;		
 		elf_header.e_shentsize = 0;							/* Section header table entry size */
 		elf_header.e_shnum = 0;								/* Section header table entry count */
 		elf_header.e_shstrndx = 0;							/* Section header string table index */
@@ -86,9 +87,9 @@ void generarBinario(char * destino)
 		prog_header.p_type = PT_LOAD;						/* Segment type */
 		prog_header.p_offset = sizeof(Elf32_Ehdr);			/* Segment file offset */
 		prog_header.p_vaddr	= sizeof(Elf32_Ehdr) + 			/* Segment virtual address */
-				sizeof(Elf32_Phdr);
+				sizeof(Elf32_Phdr) * elf_header.e_phnum;
 		prog_header.p_paddr	= sizeof(Elf32_Ehdr) +			/* Segment physical address */
-				sizeof(Elf32_Phdr);
+				sizeof(Elf32_Phdr) * elf_header.e_phnum;
 		prog_header.p_filesz = progBuffer.bufferUsado * 4;	/* Segment size in file */
 		prog_header.p_memsz = progBuffer.bufferUsado * 4;	/* Segment size in memory */
 		prog_header.p_flags = PF_X | PF_R;					/* Segment flags */
@@ -96,19 +97,24 @@ void generarBinario(char * destino)
 
 		fwrite(&prog_header, sizeof(Elf32_Phdr), 1, dest);
 
-		prog_header.p_type = PT_NOTE;
-		prog_header.p_offset = sizeof(Elf32_Ehdr) + sizeof(Elf32_Phdr);
-		//prog_header.p_vaddr = 
-		//prog_header.p_paddr =
-		prog_header.p_filesz = dataBuffer.bufferUsado;
-		prog_header.p_memsz = dataBuffer.bufferUsado;
-		prog_header.p_flags = PF_R;
-		prog_header.p_align = 0;
+		if (dataBuffer.bufferUsado > 0)
+		{
+			prog_header.p_type = PT_NOTE;
+			prog_header.p_offset = sizeof(Elf32_Ehdr) + sizeof(Elf32_Phdr);
+			prog_header.p_vaddr += prog_header.p_filesz;
+			prog_header.p_paddr += prog_header.p_filesz;
+			prog_header.p_filesz = dataBuffer.bufferUsado;
+			prog_header.p_memsz = dataBuffer.bufferUsado;
+			prog_header.p_flags = PF_R;
+			prog_header.p_align = 0;
 
-		fwrite(&prog_header, sizeof(Elf32_Phdr), 1, dest);
+			fwrite(&prog_header, sizeof(Elf32_Phdr), 1, dest);
+		}
 
 		fwrite(progBuffer.buffer, sizeof(uint32_t), progBuffer.bufferUsado, dest);
-		fwrite(dataBuffer.buffer, dataBuffer.bufferUsado, 1, dest);
+		
+		if (dataBuffer.bufferUsado > 0)
+			fwrite(dataBuffer.buffer, dataBuffer.bufferUsado, 1, dest);
 		fclose(dest);
 	}
 	else
@@ -174,7 +180,9 @@ int escribirInstruccionBuffer(char * instruccion[], int numeroParametros, int nu
 
 	if (obtenerInstruccion(instruccion, numeroParametros, &opcode))
 	{
-		printf("Instrucción: %s, Opcode: %.8x\n", instruccion[0], opcode);
+		#ifdef DEBUG
+			printf("Instrucción: %s, Opcode: %.8x\n", instruccion[0], opcode);
+		#endif
 		buffer_addOpcode(b, opcode);
 
 		return 1;

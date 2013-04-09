@@ -114,7 +114,7 @@ void listaSaltos_vaciar(saltos_list_t * lista)
 	}
 }
 
-
+#ifdef DEBUG
 /*
  * Función listaSaltos_mostrar.
  * Muestra todas las etiquetas de saltos con sus direcciones de salto
@@ -134,6 +134,7 @@ void listaSaltos_mostrar(saltos_list_t * lista)
 			printf("Salto \"%s\" en %.8x\n", temp->etiquetaSalto, temp->direccionSalto);
 	}
 }
+#endif
 
 
 
@@ -255,7 +256,7 @@ void listaISaltos_vaciar(i_saltos_list_t * lista)
 	}
 }
 
-
+#ifdef DEBUG
 /*
  * Función listaSaltos_mostrar.
  * Muestra todas las etiquetas de saltos con sus direcciones de salto
@@ -275,3 +276,4 @@ void listaISaltos_mostrar(i_saltos_list_t * lista)
 			printf("Modificar salto \"%s\" en %.8x\n", temp->etiquetaSalto, temp->posicionInstruccion * 4);
 	}
 }
+#endif

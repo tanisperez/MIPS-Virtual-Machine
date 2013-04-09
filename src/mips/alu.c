@@ -287,6 +287,11 @@ void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 		cpu.PC +=  (--offset) << 2;
 }
 
+void lui(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	*rt = (direction << 16);
+}
+
 void ori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	*rt = (*rs) | offset;

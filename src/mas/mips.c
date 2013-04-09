@@ -27,6 +27,7 @@
 #include "cadenas.h"
 #include "programBuffer.h"
 #include "saltos.h"
+#include "variables.h"
 
 opcode_t listaInstrucciones[] = {
 	/* Instrucciones Tipo-R */
@@ -58,26 +59,26 @@ opcode_t listaInstrucciones[] = {
 	{"xor",		0x00, 'R', 0x26, 3}, //xor $d, $s, $t
 	{"syscall",	0x00, 'R', 0x0C, 0}, //syscall
 	/* Instrucciones Tipo-I */
-	{"addi", 	0x08, 'I', 0x00, 3}, //addi $t, $s, imm ----->
-	{"addiu", 	0x09, 'I', 0x00, 3}, //addiu $t, $s, imm ----->
-	{"andi",	0x0C, 'I', 0x00, 3}, //andi $t, $s, imm ----->
-	{"beq",		0x04, 'I', 0x00, 3}, //beq $s, $t, offset ----->
+	{"addi", 	0x08, 'I', 0x00, 3}, //addi $t, $s, imm
+	{"addiu", 	0x09, 'I', 0x00, 3}, //addiu $t, $s, imm
+	{"andi",	0x0C, 'I', 0x00, 3}, //andi $t, $s, imm
+	{"beq",		0x04, 'I', 0x00, 3}, //beq $s, $t, offset
 	{"bgez",	0x01, 'I', 0x01, 2}, //bgez $s, offset
 	{"bgezal",	0x01, 'I', 0x11, 2}, //bgezal $s, offset
 	{"bgtz",	0x07, 'I', 0x00, 2}, //bgtz $s, offset
 	{"blez",	0x06, 'I', 0x00, 2}, //blez $s, offset
 	{"bltz",	0x01, 'I', 0x00, 2}, //bltz $s, offset
 	{"bltzal",	0x01, 'I', 0x10, 2}, //bltzal $s, offset
-	{"bne",		0x05, 'I', 0x00, 3}, //bne $s, $t, offset ----->
+	{"bne",		0x05, 'I', 0x00, 3}, //bne $s, $t, offset
 	{"lb",		0x20, 'I', 0x00, 2}, //lb $t, offset($s)
 	{"lui",		0x0F, 'I', 0x00, 2}, //lui $t, imm
 	{"lw",		0x23, 'I', 0x00, 2}, //lw $t, offset($s)
-	{"ori",		0x0D, 'I', 0x00, 3}, //ori $t, $s, imm ----->
+	{"ori",		0x0D, 'I', 0x00, 3}, //ori $t, $s, imm
 	{"sb",		0x28, 'I', 0x00, 2}, //sb $t, offset($s)
-	{"slti",	0x0A, 'I', 0x00, 3}, //slti $t, $s, imm ----->
-	{"sltiu",	0x0B, 'I', 0x00, 3}, //sltiu $t, $s, imm ----->
+	{"slti",	0x0A, 'I', 0x00, 3}, //slti $t, $s, imm
+	{"sltiu",	0x0B, 'I', 0x00, 3}, //sltiu $t, $s, imm
 	{"sw",		0x2B, 'I', 0x00, 2}, //sw $t, offset($s)
-	{"xori",	0x0E, 'I', 0x00, 3}, //xori $t, $s, imm ----->
+	{"xori",	0x0E, 'I', 0x00, 3}, //xori $t, $s, imm
 	/* Instrucciones Tipo-J */
 	{"j",		0x02, 'J', 0x00, 1}, //j target
 	{"jal",		0x03, 'J', 0x00, 1}, //jal target
@@ -130,6 +131,7 @@ int obtenerInstruccionJ(char * instruccion[], int numeroParametros, opcode_t cod
 /* Variables externas de ensamblador.c */
 extern saltos_list_t listaEtiquetasSalto;
 extern i_saltos_list_t listaInstruccionesSaltoDesconocido;
+extern variables_list_t listaEtiquetasVariable;
 extern buffer_t progBuffer;
 
 
@@ -326,11 +328,30 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 	registro_t rt, rs;
 	uint32_t opcodeI = 0;
 	uint16_t inmediato = 0;
-	uint32_t direccionSalto = 0;
+	uint32_t direccion = 0;
 	int16_t saltoRelativo = 0;
 	
 	switch (codopt.codopt)
 	{
+	//Operación lui
+	case 0x0F:
+		if (numeroParametros == 3)
+		{
+			rt = obtenerRegistro(instruccion[1]);
+			if (rt.nombre != NULL)
+			{
+				if (listaVariables_buscar(&listaEtiquetasVariable, instruccion[2], &direccion))
+				{
+					*opcode = (codopt.codopt << 26) | (rt.codigo << 16) | ((direccion & 0xFFFF0000) >> 16);
+					resultado = 1;
+				}
+				else
+					printf("Error! No se encontró la etiqueta \"%s\"\n", instruccion[2]);
+			}
+		}
+		else
+			printf("Error! Número de parámetros incorrecto!\n");
+		break;
 	//Operación lb
 	case 0x20:
 		break;
@@ -352,23 +373,20 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 			rs = obtenerRegistro(instruccion[1]);
 			if (rs.nombre != NULL)
 			{
-				//if (strcmp(codopt.operacion, "bgez") == 0)
-				//{
-					if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[2], &direccionSalto))
-					{
-						saltoRelativo = (int16_t)(direccionSalto / 4) - progBuffer.bufferUsado;
+				if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[2], &direccion))
+				{
+					saltoRelativo = (int16_t)(direccion / 4) - progBuffer.bufferUsado;
 
-						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | (codopt.codfunc << 16) 
-							| (saltoRelativo & 0x0000FFFF);
-						resultado = 1;
-					}
-					else
-					{
-						listaISaltos_insertar(&listaInstruccionesSaltoDesconocido, instruccion[2], progBuffer.bufferUsado);
-						*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | (codopt.codfunc << 16);
-						resultado = 1;
-					}
-				//}
+					*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | (codopt.codfunc << 16) 
+						| (saltoRelativo & 0x0000FFFF);
+					resultado = 1;
+				}
+				else
+				{
+					listaISaltos_insertar(&listaInstruccionesSaltoDesconocido, instruccion[2], progBuffer.bufferUsado);
+					*opcode = (codopt.codopt << 26) | (rs.codigo << 21) | (codopt.codfunc << 16);
+					resultado = 1;
+				}
 			}
 			else
 				printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[1]);
@@ -384,9 +402,9 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 						beq o bne. */
 					if (codopt.codopt == 0x04 || codopt.codopt == 0x05)
 					{
-						if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[3], &direccionSalto))
+						if (listaSaltos_buscar(&listaEtiquetasSalto, instruccion[3], &direccion))
 						{
-							saltoRelativo = (int16_t)(direccionSalto / 4) - progBuffer.bufferUsado;
+							saltoRelativo = (int16_t)(direccion / 4) - progBuffer.bufferUsado;
 							*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
 											| (rt.codigo << 16) | (saltoRelativo & 0x0000FFFF);
 							resultado = 1;
@@ -408,7 +426,15 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 							resultado = 1;
 						}
 						else
-							printf("Error! La cadena \"%s\" no es un número válido de 16 bits!\n", instruccion[3]);
+							if (listaVariables_buscar(&listaEtiquetasVariable, instruccion[3], &direccion))
+							{
+								inmediato = (uint16_t)direccion & 0x0000FFFF;
+								*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+											| (rt.codigo << 16) | inmediato;
+								resultado = 1;
+							}
+							else
+								printf("Error! La cadena \"%s\" no es un número válido de 16 bits!\n", instruccion[3]);
 					}
 				}
 				else

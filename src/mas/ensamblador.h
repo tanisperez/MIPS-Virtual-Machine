@@ -33,11 +33,6 @@
 #define SECCION_TEXT	1
 #define SECCION_DATA	2
 
-#ifndef EF_MIPS_ARCH_2
- 	#define EF_MIPS_ARCH_2 0x10000000
-#endif
-
 void ensamblarArchivo(char * archivo, char * destino);
-
 
 #endif

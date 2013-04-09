@@ -109,6 +109,34 @@ void listaVariables_vaciar(variables_list_t * lista)
 
 
 /*
+ * Función listaVariables_buscar.
+ * Buscar en la lista una etiqueta de salto, si tiene éxito,
+ * guarda la dirección de salto en el puntero direccion y devuelve 1.
+ * En caso contrario devuelve 0.
+*/
+int listaVariables_buscar(variables_list_t * lista, char * etiqueta, uint32_t * direccionVariable)
+{
+	variables_t * l = lista->primero;
+	variables_t * temp = NULL;
+
+	while (l != NULL)
+	{
+		temp = l;
+		l = l->siguiente;
+
+		if (strcmp(temp->etiquetaVariable, etiqueta) == 0)
+		{
+			*direccionVariable = temp->direccionVariable;
+			return 1;	
+		}
+	}
+
+	return 0;
+}
+
+
+#ifdef DEBUG
+/*
  * Función listaVariables_mostrar.
  * Muestra todas las etiquetas de variable con las direcciones
  * de memoria a la que apuntan.
@@ -127,3 +155,4 @@ void listaVariables_mostrar(variables_list_t * lista)
 			printf("Variable \"%s\" en %.8x\n", temp->etiquetaVariable, temp->direccionVariable);
 	}
 }
+#endif

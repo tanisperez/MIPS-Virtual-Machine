@@ -54,13 +54,16 @@ typedef struct i_saltos_list {
 void listaSaltos_crear(saltos_list_t * lista);
 void listaSaltos_insertar(saltos_list_t * lista, char * etiquetaSalto, uint32_t direccionSalto);
 void listaSaltos_vaciar(saltos_list_t * lista);
-void listaSaltos_mostrar(saltos_list_t * lista);
 int listaSaltos_buscar(saltos_list_t * lista, char * etiquetaSalto, uint32_t * direccionSalto);
-
+#ifdef DEBUG
+void listaSaltos_mostrar(saltos_list_t * lista);
+#endif
 
 void listaISaltos_crear(i_saltos_list_t * lista);
 void listaISaltos_insertar(i_saltos_list_t * lista, char * etiquetaSalto, uint32_t posicionInstruccion);
 void listaISaltos_vaciar(i_saltos_list_t * lista);
+#ifdef DEBUG
 void listaISaltos_mostrar(i_saltos_list_t * lista);
+#endif
 
 #endif

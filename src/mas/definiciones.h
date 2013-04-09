@@ -20,6 +20,6 @@
 #ifndef DEFINICIONES_H
 #define DEFINICIONES_H
 
-#define MAS_VER	0.05
+#define MAS_VER	0.06
 
 #endif

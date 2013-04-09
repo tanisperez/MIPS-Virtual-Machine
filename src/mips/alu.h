@@ -42,6 +42,9 @@ typedef struct cpu{
 	uint32_t program_size;
 	uint32_t PC;
 
+	uint8_t * memory;
+	uint32_t memory_size;
+
 	uint8_t syscallTermination;
 
 	registers_t registros;
@@ -88,6 +91,7 @@ void blez(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offse
 void bltz(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
 void bltzal(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
 void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
+void lui(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
 void ori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
 void slti(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);
 void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction);

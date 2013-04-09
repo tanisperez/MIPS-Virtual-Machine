@@ -41,6 +41,9 @@ typedef struct variables_list_{
 void listaVariables_crear(variables_list_t * lista);
 void listaVariables_insertar(variables_list_t * lista, char * etiquetaVariable, uint32_t direccionVariable);
 void listaVariables_vaciar(variables_list_t * lista);
+int listaVariables_buscar(variables_list_t * lista, char * etiqueta, uint32_t * direccionVariable);
+#ifdef DEBUG
 void listaVariables_mostrar(variables_list_t * lista);
+#endif
 
 #endif
