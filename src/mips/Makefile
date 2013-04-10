@@ -1,6 +1,6 @@
 #Makefile for MIPS Virtual Machine
 CC=gcc
-PARAMS=-O2
+PARAMS=-O2 -fno-builtin
 OBJECTS=main.o vm.o alu.o syscalls.o
 SOURCES=main.c vm.c alu.c syscalls.c
 

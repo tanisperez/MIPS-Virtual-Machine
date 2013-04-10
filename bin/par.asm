@@ -1,3 +1,4 @@
+.text
 inicio:
 	addi $v0, $v0, 5 # $v0 = 5
 	syscall # read_integer en $v0

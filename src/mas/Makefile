@@ -1,6 +1,6 @@
 #Makefile for Mips ASsembler
 CC=gcc
-PARAMS=-O2
+PARAMS=-O2 -fno-builtin
 OBJECTS=mas.o ensamblador.o mips.o saltos.o programBuffer.o cadenas.o dataBuffer.o variables.o
 SOURCES=mas.c ensamblador.c mips.c saltos.c programBuffer.c cadenas.c dataBuffer.c variables.c
 

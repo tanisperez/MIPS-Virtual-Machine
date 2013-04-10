@@ -225,7 +225,7 @@ tipos_dato_t tipos[] = {
  * La función devuelve un puntero de tipo void * que apunta a la variable convertida
  * a su formato adecuado.
 */
-void * obtenerPunteroADato(const char * tipo, const char * cadena, uint32_t * tam)
+void * obtenerPunteroADato(const char * tipo, char * cadena, uint32_t * tam)
 {
 	int i = 0;
 
@@ -234,7 +234,7 @@ void * obtenerPunteroADato(const char * tipo, const char * cadena, uint32_t * ta
 		if (strcmp(tipos[i].nombre, tipo) == 0)
 		{
 			if (tipos[i].flag == TYPE_ASCIIZ)
-				*tam = strlen(cadena) - 2;
+				*tam = strlen(cadena) - 2 + 1;
 			else
 				*tam = tipos[i].tam;
 
@@ -288,6 +288,28 @@ void * obtenerFloatPtr(char * cadena)
 */
 void * obtenerAsciizPtr(char * cadena)
 {
-	cadena[strlen(cadena) - 1] = NULL;
+	cadena[strlen(cadena) - 1] = '\0';
 	return (++cadena);
+}
+
+
+/*
+ * Función: obtenerRegistroYDesplazamiento.
+ * A partir de una cadena del tipo 4($a0), la separa, y copia el desplazamiento
+ * y el registro indicado.
+*/
+int obtenerRegistroYDesplazamiento(char * cadena, char * desplazamiento, char * registro)
+{
+	char * temp = strtok(cadena, " (\t\n");
+	if (temp != NULL)
+		strcpy(desplazamiento, temp);
+	else
+		return 0;
+
+	if ((temp = strtok(NULL, " )\t\n")) != NULL)
+		strcpy(registro, temp);
+	else
+		return 0;
+
+	return 1;
 }

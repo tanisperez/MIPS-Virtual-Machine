@@ -25,10 +25,27 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * Función: fatal_error.
+ * Esta función sirve de interfaz para terminar la ejecución
+ * de la máquina virtual ante un fallo mostrando un mensaje.
+*/
+void fatal_error(const char * error)
+{
+	puts(error);
+	exit(EXIT_FAILURE);
+}
+
 /* Syscall 1 */
 void print_integer(uint32_t i)
 {
 	printf("%d", i);
+}
+
+/* Syscall 4 */
+void print_string(char * string)
+{
+	puts(string);
 }
 
 /* Syscall 5 */

@@ -52,6 +52,7 @@ int esSalto(const char * linea);
 int esEtiquetaSalto(const char * linea);
 int esVariable(const char * linea);
 
-void * obtenerPunteroADato(const char * tipo, const char * cadena, uint32_t * tam);
+void * obtenerPunteroADato(const char * tipo, char * cadena, uint32_t * tam);
+int obtenerRegistroYDesplazamiento(char * cadena, char * desplazamiento, char * registro);
 
 #endif

@@ -24,7 +24,7 @@
 #include <stdint.h>
 
 /* 1024 bytes */
-#define DEFAULT_SIZE	1024
+#define BUFFER_SIZE	1024
 
 typedef struct data_buffer_ {
 	uint8_t * buffer;

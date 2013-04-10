@@ -62,7 +62,6 @@ int main(int argc, char * argv[])
 				imprimirUso();
 				return 1;
 			default:
-				abort();
 				break;
 		}
 	}

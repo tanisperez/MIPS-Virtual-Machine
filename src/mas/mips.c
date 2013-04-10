@@ -330,6 +330,8 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 	uint16_t inmediato = 0;
 	uint32_t direccion = 0;
 	int16_t saltoRelativo = 0;
+	char * desplazamiento = NULL;
+	char * registro = NULL;
 	
 	switch (codopt.codopt)
 	{
@@ -354,9 +356,47 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 		break;
 	//Operación lb
 	case 0x20:
-		break;
 	//Operación lw
 	case 0x23:
+		rt = obtenerRegistro(instruccion[1]);
+		if (rt.nombre != NULL)
+		{
+			desplazamiento = (char *) malloc(strlen(instruccion[2]) + 1);
+			if (desplazamiento != NULL)
+			{
+				registro = (char *) malloc(strlen(instruccion[2]) + 1);
+				if (registro != NULL)
+				{
+					obtenerRegistroYDesplazamiento(instruccion[2], desplazamiento, registro);
+
+					rs = obtenerRegistro(registro);
+					if (rs.nombre != NULL)
+					{
+						if (strToUINT16(desplazamiento, &inmediato))
+						{
+							*opcode = (codopt.codopt << 26) | (rs.codigo << 21) 
+												| (rt.codigo << 16) | inmediato;
+							resultado = 1;
+						}
+						else
+							printf("Error! La cadena \"%s\" no es un número válido de 16 bits!\n", desplazamiento);
+					}
+					else
+						printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", registro);
+
+					free(registro);
+				}
+				else
+					printf("No se pudo reservar memoria para el registro!\n");
+
+				free(desplazamiento);
+			}
+			else
+				printf("No se pudo reservar memoria para el desplazamiento!\n");
+		}
+		else
+			printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[1]);
+
 		break;
 	//Operación sb
 	case 0x28:

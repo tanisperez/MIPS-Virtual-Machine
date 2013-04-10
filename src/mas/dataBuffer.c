@@ -31,7 +31,7 @@ void data_buffer_realloc(data_buffer_t * d);
 /*
  * Función data_buffer_init.
  * Recibe la dirección de memoria de una estructura buffer_t y
- * la inicializa. Reserva una cantidad de memoria DEFAULT_SIZE en bytes,
+ * la inicializa. Reserva una cantidad de memoria BUFFER_SIZE en bytes,
  * cuya constante está definida en dataBuffer.h.
 */
 void data_buffer_init(data_buffer_t * d)
@@ -42,10 +42,10 @@ void data_buffer_init(data_buffer_t * d)
 	d->buffer = NULL;
 	d->tamBuffer = 0;
 	d->bufferUsado = 0;
-	d->buffer = (uint8_t *) malloc(DEFAULT_SIZE * sizeof(uint8_t));
+	d->buffer = (uint8_t *) malloc(BUFFER_SIZE * sizeof(uint8_t));
 
 	if (d->buffer != NULL)
-		d->tamBuffer = DEFAULT_SIZE;
+		d->tamBuffer = BUFFER_SIZE;
 	else
 		printf("Error! No se pudo reservar memoria con malloc en data_buffer_init()!\n");
 }
@@ -54,19 +54,19 @@ void data_buffer_init(data_buffer_t * d)
 /*
  * Función data_buffer_realloc.
  * Recibe por parámetro la dirección de memoria de una estructura data_buffer_t y se
- * encarga de incrementar su tamaño según la constante DEFAULT_SIZE. Esta función
+ * encarga de incrementar su tamaño según la constante BUFFER_SIZE. Esta función
  * no se puede llamar explícitamente, depende de data_buffer_write().
 */
 void data_buffer_realloc(data_buffer_t * d)
 {
 	uint8_t * temp = NULL;
 
-	temp = (uint8_t *) malloc((d->tamBuffer + DEFAULT_SIZE) * sizeof(uint8_t));
+	temp = (uint8_t *) malloc((d->tamBuffer + BUFFER_SIZE) * sizeof(uint8_t));
 	if (temp != NULL)
 	{
 		memcpy(temp, d->buffer, d->tamBuffer * sizeof(uint8_t));
 		free(d->buffer);
-		d->tamBuffer += DEFAULT_SIZE;
+		d->tamBuffer += BUFFER_SIZE;
 		d->buffer = temp;
 	}
 	else

@@ -195,6 +195,12 @@ void syscall(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t of
 		case SYS_PRINT_INTEGER:
 			print_integer(cpu.registros.a0);
 			break;
+		case SYS_PRINT_STRING:
+			if (cpu.registros.a0 >= 0 && cpu.registros.a0 < cpu.memory_size)
+				print_string(&cpu.memory[cpu.registros.a0]);
+			else
+				fatal_error("Syscall print_string! Violación de segmento!\n");
+			break;
 		case SYS_READ_INTEGER:
 			read_integer(&cpu.registros.v0);
 			break;
@@ -287,9 +293,25 @@ void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 		cpu.PC +=  (--offset) << 2;
 }
 
+void lb(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if ((*rs) + offset > 0 && (*rs) + offset < cpu.memory_size)
+		*rt = cpu.memory[(*rs) + offset];
+	else
+		fatal_error("Operación lb. Violación de segmento!\n");
+}
+
 void lui(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	*rt = (direction << 16);
+}
+
+void lw(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if ((*rs) + offset > 0 && (*rs) + offset < cpu.memory_size)
+		*rt = cpu.memory[(*rs) + offset];
+	else
+		fatal_error("Operación lw. Violación de segmento!\n");
 }
 
 void ori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)

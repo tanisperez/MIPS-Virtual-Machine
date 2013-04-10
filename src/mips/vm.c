@@ -27,6 +27,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <elf.h>
+#include <ctype.h>
 
 extern cpu_t cpu; //En alu.c
 
@@ -88,9 +89,9 @@ opcode_t listaInstrucciones[] = {
 	{"bltzal",	0x01, 'I', 0x10, bltzal}, //bltzal $s, offset
 	{"bltz",	0x01, 'I', 0x00, bltz}, //bltz $s, offset
 	{"bne",		0x05, 'I', 0x00, bne}, //bne $s, $t, offset
-	{"lb",		0x20, 'I', 0x00, NULL}, //lb $t, offset($s)
+	{"lb",		0x20, 'I', 0x00, lb}, //lb $t, offset($s)
 	{"lui",		0x0F, 'I', 0x00, lui}, //lui $t, imm
-	{"lw",		0x23, 'I', 0x00, NULL}, //lw $t, offset($s)
+	{"lw",		0x23, 'I', 0x00, lw}, //lw $t, offset($s)
 	{"ori",		0x0D, 'I', 0x00, ori}, //ori $t, $s, imm
 	{"sb",		0x28, 'I', 0x00, NULL}, //sb $t, offset($s)
 	{"slti",	0x0A, 'I', 0x00, slti}, //slti $t, $s, imm
@@ -155,10 +156,13 @@ void sigintEvent()
 
 /*
  * Función visualizarCPUInfo.
- * Muestra el estado de los registros de la CPU en formato hexadecimal.
+ * Muestra el estado de los registros de la CPU en formato hexadecimal y
+ * el estado de la memoria del programa.
 */
 void visualizarCPUInfo()
 {
+	int i = 0, u = 0, e = 0;
+
 	printf("\nMIPS Virtual Machine Registers\n");
 	printf("v0: %.8x v1: %.8x\n", cpu.registros.v0, cpu.registros.v1);
 	printf("a0: %.8x a1: %.8x a2: %.8x a3: %.8x\n", cpu.registros.a0, 
@@ -174,6 +178,47 @@ void visualizarCPUInfo()
 	printf("gp: %.8x sp: %.8x fp: %.8x ra: %.8x\n", cpu.registros.gp, cpu.registros.sp,
 		cpu.registros.fp, cpu.registros.ra);
 	printf("L0: %.8x HI: %.8x\n", cpu.registros.LO, cpu.registros.HI);
+
+
+	if (cpu.memory_size > 0)
+	{
+		printf("\nMIPS Virtual Machine Memory (%d bytes)\n", cpu.memory_size);
+
+		while (i < cpu.memory_size)
+		{
+			printf("%.8x: ", i);
+
+			while (u < 16 && i < cpu.memory_size)
+			{
+				printf("%.2x ", cpu.memory[i]);
+				i++;
+				u++;
+			}
+			i -= u;
+
+			if (u < 16)
+			{
+				for (e = 0; e < 16 - u; e++)
+					printf("   ");
+			}
+
+			u = 0;
+			printf("| ");
+			while (u < 16 && i < cpu.memory_size)
+			{
+				if (isprint(cpu.memory[i]))
+					printf("%c", cpu.memory[i]);
+				else
+					putchar('.');
+				i++;
+				u++;
+			}
+
+			u = 0;
+
+			printf("\n");
+		}
+	}
 }
 
 
@@ -319,6 +364,7 @@ void interpretarArchivo(char * archivo)
 					for (; i < elf_header.e_phnum; i++)
 					{
 						fread(&prog_header, sizeof(prog_header), 1, source);
+						
 						currentPos = ftell(source);
 
 						if (prog_header.p_type == PT_LOAD && prog_header.p_flags == (PF_X | PF_R) && cpu.byteCode == NULL)
