@@ -23,6 +23,7 @@
 #include "vm.h"
 #include "syscalls.h"
 #include <stdio.h>
+#include <string.h>
 
 /* Variable global con los registros de la CPU,
    memoria, PC, etc.. */
@@ -295,7 +296,7 @@ void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 
 void lb(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	if ((*rs) + offset > 0 && (*rs) + offset < cpu.memory_size)
+	if ((*rs) + offset >= 0 && (*rs) + offset < cpu.memory_size)
 		*rt = cpu.memory[(*rs) + offset];
 	else
 		fatal_error("Operación lb. Violación de segmento!\n");
@@ -308,8 +309,8 @@ void lui(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 
 void lw(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	if ((*rs) + offset > 0 && (*rs) + offset < cpu.memory_size)
-		*rt = cpu.memory[(*rs) + offset];
+	if ((*rs) + offset >= 0 && (*rs) + offset < cpu.memory_size - 1)
+		memcpy(rt, &cpu.memory[(*rs) + offset], sizeof(uint16_t));
 	else
 		fatal_error("Operación lw. Violación de segmento!\n");
 }
@@ -317,6 +318,14 @@ void lw(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset,
 void ori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	*rt = (*rs) | offset;
+}
+
+void sb(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if ((*rs) + offset >= 0 && (*rs) + offset < cpu.memory_size)
+		cpu.memory[(*rs) + offset] = (uint8_t)(0x000000FF & (*rt));
+	else
+		fatal_error("Operación sb. Violación de segmento!\n");
 }
 
 void slti(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -333,6 +342,14 @@ void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offs
 		*rt = 1;
 	else
 		*rt = 0;
+}
+
+void sw(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
+{
+	if ((*rs) + offset >= 0 && (*rs) + offset < cpu.memory_size - 1)
+		memcpy(&cpu.memory[(*rs) + offset], rt, sizeof(uint16_t));
+	else
+		fatal_error("Operación sb. Violación de segmento!\n");
 }
 
 void xori(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)

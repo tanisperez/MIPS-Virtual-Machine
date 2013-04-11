@@ -354,6 +354,10 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 		else
 			printf("Error! Número de parámetros incorrecto!\n");
 		break;
+	//Operación sb
+	case 0x28:
+	//Operación sw
+	case 0x2B:
 	//Operación lb
 	case 0x20:
 	//Operación lw
@@ -396,13 +400,6 @@ int obtenerInstruccionI(char * instruccion[], int numeroParametros, opcode_t cod
 		}
 		else
 			printf("Error! El registro \"%s\" no es un identificador de registro válido!\n", instruccion[1]);
-
-		break;
-	//Operación sb
-	case 0x28:
-		break;
-	//Operación sw
-	case 0x2B:
 		break;
 
 	default:

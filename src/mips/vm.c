@@ -93,10 +93,10 @@ opcode_t listaInstrucciones[] = {
 	{"lui",		0x0F, 'I', 0x00, lui}, //lui $t, imm
 	{"lw",		0x23, 'I', 0x00, lw}, //lw $t, offset($s)
 	{"ori",		0x0D, 'I', 0x00, ori}, //ori $t, $s, imm
-	{"sb",		0x28, 'I', 0x00, NULL}, //sb $t, offset($s)
+	{"sb",		0x28, 'I', 0x00, sb}, //sb $t, offset($s)
 	{"slti",	0x0A, 'I', 0x00, slti}, //slti $t, $s, imm
 	{"sltiu",	0x0B, 'I', 0x00, sltiu}, //sltiu $t, $s, imm
-	{"sw",		0x2B, 'I', 0x00, NULL}, //sw $t, offset($s)
+	{"sw",		0x2B, 'I', 0x00, sw}, //sw $t, offset($s)
 	{"xori",	0x0E, 'I', 0x00, xori}, //xori $t, $s, imm
 	/* Instrucciones Tipo-J */
 	{"j",		0x02, 'J', 0x00, j}, //j target
