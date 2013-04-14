@@ -24,20 +24,27 @@
 #include "syscalls.h"
 #include <stdio.h>
 #include <string.h>
+#include "fpu.h"
 
 /* Variable global con los registros de la CPU,
    memoria, PC, etc.. */
 cpu_t cpu;
+extern fpu_registers_t fpu;
 
 
 /******************************************************************************************************
  Funciones Tipo-R
 ******************************************************************************************************/
 
-// ¿Overflow?
 void add(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	*rd = (*rs) + (*rt);
+	/*if (IS_OVERFLOW(*rs, *rt))
+		fpu.fcsr |= CAUSE_OVERFLOW;
+	else
+		if (IS_UNDERFLOW(*rs, *rt))
+			fpu.fcsr |= CAUSE_UNDERFLOW;
+		else	*/
+			*rd = (*rs) + (*rt);
 }
 
 void addu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
@@ -309,8 +316,8 @@ void lui(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 
 void lw(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	if ((*rs) + offset >= 0 && (*rs) + offset < cpu.memory_size - 1)
-		memcpy(rt, &cpu.memory[(*rs) + offset], sizeof(uint16_t));
+	if ((*rs) + (offset * sizeof(uint16_t)) >= 0 && (*rs) + (offset * sizeof(uint16_t)) < cpu.memory_size - 1)
+		memcpy(rt, &cpu.memory[(*rs) + (offset * sizeof(uint16_t))], sizeof(uint16_t));
 	else
 		fatal_error("Operación lw. Violación de segmento!\n");
 }
@@ -346,8 +353,8 @@ void sltiu(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offs
 
 void sw(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
-	if ((*rs) + offset >= 0 && (*rs) + offset < cpu.memory_size - 1)
-		memcpy(&cpu.memory[(*rs) + offset], rt, sizeof(uint16_t));
+	if ((*rs) + (offset * sizeof(uint16_t)) >= 0 && (*rs) + (offset * sizeof(uint16_t)) < cpu.memory_size - 1)
+		memcpy(&cpu.memory[(*rs) + (offset * sizeof(uint16_t))], rt, sizeof(uint16_t));
 	else
 		fatal_error("Operación sb. Violación de segmento!\n");
 }

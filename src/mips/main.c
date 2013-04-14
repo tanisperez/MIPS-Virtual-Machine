@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include "definiciones.h"
 
-
+/* Añadir parámetro opcional de Debugging */
 int main(int argc, char * argv[])
 {
 	printf("MIPS Virtual Machine - version %.2f\n\n", MIPS_VER);

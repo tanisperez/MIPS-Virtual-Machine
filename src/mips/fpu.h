@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+
+#define CAUSE_OVERFLOW 	0x00004000
+#define CAUSE_UNDERFLOW	0x00002000 
+
 /*
  *	FPU Control and Status Register (32 bits)
  *
@@ -57,10 +61,10 @@
  *
 */
 
-typedef fpu_registers{
+typedef struct fpu_registers{
 
 	uint32_t fcsr; //FPU Control and Status Register (Page 218 of MIPS IV manual)
 
-}fpu_registers_t;
+} fpu_registers_t;
 
 #endif

@@ -45,7 +45,7 @@ void print_integer(uint32_t i)
 /* Syscall 4 */
 void print_string(char * string)
 {
-	puts(string);
+	printf("%s", string);
 }
 
 /* Syscall 5 */

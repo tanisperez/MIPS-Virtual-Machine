@@ -32,8 +32,9 @@ typedef struct tipos_dato_{
 
 #define TYPE_NULL	0
 #define TYPE_WORD	1
-#define TYPE_FLOAT	2
-#define TYPE_ASCIIZ	3
+#define TYPE_DWORD	2
+#define TYPE_FLOAT	3
+#define TYPE_ASCIIZ	4
 
 int strToUINT16(char * cadena, uint16_t * inmediato);
 int strToUINT8(char * cadena, uint8_t * desplazamiento);

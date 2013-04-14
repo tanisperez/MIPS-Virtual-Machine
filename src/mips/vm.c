@@ -22,6 +22,7 @@
 
 #include "vm.h"
 #include "alu.h"
+#include "fpu.h"
 #include <stdio.h>
 #include <signal.h>
 #include <malloc.h>
@@ -30,6 +31,7 @@
 #include <ctype.h>
 
 extern cpu_t cpu; //En alu.c
+extern fpu_registers_t fpu; //En fpu.c
 
 /* Definición de los prototipos de las funciones privadas en vm.c */
 void visualizarCPUInfo();
@@ -163,7 +165,7 @@ void visualizarCPUInfo()
 {
 	int i = 0, u = 0, e = 0;
 
-	printf("\nMIPS Virtual Machine Registers\n");
+	printf("\n\nMIPS Virtual Machine Registers\n");
 	printf("v0: %.8x v1: %.8x\n", cpu.registros.v0, cpu.registros.v1);
 	printf("a0: %.8x a1: %.8x a2: %.8x a3: %.8x\n", cpu.registros.a0, 
 		cpu.registros.a1, cpu.registros.a2, cpu.registros.a3);
@@ -219,6 +221,9 @@ void visualizarCPUInfo()
 			printf("\n");
 		}
 	}
+
+	printf("\nFPU Control and Status Register\n");
+	printf("fcsr: %.8x\n", fpu.fcsr);
 }
 
 
@@ -410,6 +415,7 @@ void interpretarArchivo(char * archivo)
 					cpu.PC = 0;
 					cpu.syscallTermination = 0;
 					memset(&cpu.registros, 0, sizeof(registers_t));
+					memset(&fpu, 0, sizeof(fpu_registers_t));
 
 					signal(SIGINT, sigintEvent);
 

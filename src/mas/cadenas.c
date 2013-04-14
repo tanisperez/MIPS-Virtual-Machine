@@ -26,6 +26,7 @@
 
 /* Prototipos de funciones privadas */
 void * obtenerWordPtr(char * cadena);
+void * obtenerDWordPtr(char * cadena);
 void * obtenerFloatPtr(char * cadena);
 void * obtenerAsciizPtr(char * cadena);
 
@@ -211,6 +212,7 @@ int esEtiquetaSalto(const char * linea)
  */
 tipos_dato_t tipos[] = {
 	{".word", 	TYPE_WORD,		sizeof(uint16_t),	obtenerWordPtr},
+	{".dword",	TYPE_DWORD,		sizeof(uint32_t),	obtenerDWordPtr},
 	{".float", 	TYPE_FLOAT,		sizeof(float), 		obtenerFloatPtr},
 	{".asciiz",	TYPE_ASCIIZ,	sizeof(char),		obtenerAsciizPtr},
 	{NULL,		TYPE_NULL,		0, 					NULL}
@@ -228,18 +230,25 @@ tipos_dato_t tipos[] = {
 void * obtenerPunteroADato(const char * tipo, char * cadena, uint32_t * tam)
 {
 	int i = 0;
+	void * temp = NULL;
 
 	for (; tipos[i].nombre != NULL; i++)
 	{
 		if (strcmp(tipos[i].nombre, tipo) == 0)
 		{
-			if (tipos[i].flag == TYPE_ASCIIZ)
-				*tam = strlen(cadena) - 2 + 1;
-			else
-				*tam = tipos[i].tam;
+			
 
 			if (tipos[i].obtenerVar != NULL)
-				return tipos[i].obtenerVar(cadena);
+			{
+				temp = tipos[i].obtenerVar(cadena);
+
+				if (tipos[i].flag == TYPE_ASCIIZ)
+					*tam = strlen((char*)temp) + 1;
+				else
+					*tam = tipos[i].tam;
+
+				return temp;
+			}
 			else
 			{
 				printf("Función sin implementar para el tipo de datos: %s\n", tipos[i].nombre);
@@ -267,6 +276,21 @@ void * obtenerWordPtr(char * cadena)
 }
 
 /*
+ * Función: obtenerDWordPtr.
+ * Devuelve un puntero a una variable de tipo
+ * uint32_t (DWord) a partir de una cadena de texto.
+*/
+void * obtenerDWordPtr(char * cadena)
+{
+	static uint32_t temp = 0;
+
+	if (sscanf(cadena, "%ld", &temp) == 1)
+		return &temp;
+	else
+		return NULL;
+}
+
+/*
  * Función: obtenerFloatPtr.
  * Devuelve un puntero a una variable de tipo
  * float a partir de una cadena de texto.
@@ -288,8 +312,31 @@ void * obtenerFloatPtr(char * cadena)
 */
 void * obtenerAsciizPtr(char * cadena)
 {
+	int i = 0;
+	static char temp[100];
+	memset(temp, 0, 100);
+
 	cadena[strlen(cadena) - 1] = '\0';
-	return (++cadena);
+	++cadena;
+
+	while (*cadena != '\0' && i < 100)
+	{
+		if (*cadena == '\\' && *(cadena+1) == 'n')
+		{
+			temp[i] = '\n';
+			i += 2;
+			cadena += 2;
+		}
+		else 
+		{
+			temp[i++] = *cadena;
+			cadena++;
+		}
+	}
+
+	temp[i] = '\0';
+
+	return &temp;
 }
 
 

@@ -22,6 +22,9 @@
 
 #include <stdint.h>
 
+#define IS_OVERFLOW(a,b) ((a) >= 0) && ((b) >= 0) && (((a)+(b)) <= INT32_MAX)
+#define IS_UNDERFLOW(a,b) ((a) < 0) && ((b) < 0) && ((a)+(b) >= INT32_MIN)
+
 
 typedef struct registers{
 	int32_t zero, at;
