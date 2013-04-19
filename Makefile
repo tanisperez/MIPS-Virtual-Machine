@@ -13,6 +13,10 @@ valgrind:
 	$(MAKE) valgrind --directory=src/mips/
 	@echo BUILD SUCCESSFULL! [VALGRIND MODE]
 
+progs:
+	@echo yeah
+	$(MAKE) --directory=programs/
+
 clean:
 	rm -f bin/mips
 	rm -f bin/mas
@@ -22,3 +26,4 @@ clean:
 	rm -f bin/*.exe
 	$(MAKE) clean --directory=src/mas/
 	$(MAKE) clean --directory=src/mips/
+	$(MAKE) clean --directory=programs/

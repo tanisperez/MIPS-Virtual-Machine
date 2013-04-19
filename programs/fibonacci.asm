@@ -1,7 +1,7 @@
 .data
-	texto1: .asciiz "Fibonacci\n"
-	texto2: .asciiz "N:"
-	texto3: .asciiz "fib(n)="
+	texto1: .asciiz "Serie de Fibonacci!\n"
+	texto2: .asciiz "Introduce el número de la serie que deseas calcular (n < 49): "
+	texto3: .asciiz "Fib(n) = "
 
 .text
 inicio:

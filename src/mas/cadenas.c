@@ -78,7 +78,16 @@ int strToUINT8(char * cadena, uint8_t * desplazamiento)
 */
 void minusculas(char * string)
 {
-	for (; *string != '\0'; *string++ = tolower(*string));
+	int comillas = 0;
+	for (; *string != '\0'; string++)
+	{
+		if (*string == '\"')
+			comillas = !comillas;
+		else
+			if (!comillas)
+				*string = tolower(*string);
+
+	}
 }
 
 
@@ -125,8 +134,18 @@ unsigned int trocearCadena(char * cadena, char * trozos[], int maxTrozos)
 	if ((trozos[0] = strtok(cadena," ,\t\n")) == NULL)
 		return 0;
 	
-	while (i < maxTrozos && (trozos[i] = strtok(NULL," ,\t\n")) != NULL)
+	
+	while (i < maxTrozos - 2 && (trozos[i] = strtok(NULL," ,\t\n")) != NULL)
+	{
+		if (strcmp(trozos[i], ".asciiz") == 0)
+		{
+			i++;
+			trozos[i++] = strtok(NULL, "\"");
+			break;
+		}
+
 		i++;
+	}
 
 	return i;
 }
@@ -315,9 +334,6 @@ void * obtenerAsciizPtr(char * cadena)
 	int i = 0;
 	static char temp[100];
 	memset(temp, 0, 100);
-
-	cadena[strlen(cadena) - 1] = '\0';
-	++cadena;
 
 	while (*cadena != '\0' && i < 100)
 	{
