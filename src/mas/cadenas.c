@@ -41,13 +41,20 @@ void * obtenerAsciizPtr(char * cadena);
 int strToUINT16(char * cadena, uint16_t * inmediato)
 {
 	int temp = 0;
-	if (sscanf(cadena, "%d", &temp) == 1)
+
+	if (sscanf(cadena, "0x%x", &temp) == 1)
 	{
 		*inmediato = (uint16_t)temp;
 		return 1;
 	}
 	else
-		return 0;
+		if (sscanf(cadena, "%d", &temp) == 1)
+		{
+			*inmediato = (uint16_t)temp;
+			return 1;
+		}
+		else
+			return 0;
 }
 
 
@@ -62,13 +69,20 @@ int strToUINT16(char * cadena, uint16_t * inmediato)
 int strToUINT8(char * cadena, uint8_t * desplazamiento)
 {
 	int temp = 0;
-	if (sscanf(cadena, "%d", &temp) == 1)
+
+	if (sscanf(cadena, "0x%x", &temp) == 1)
 	{
 		*desplazamiento = (uint8_t)temp;
 		return 1;
 	}
 	else
-		return 0;
+		if (sscanf(cadena, "%d", &temp) == 1)
+		{
+			*desplazamiento = (uint8_t)temp;
+			return 1;
+		}
+		else
+			return 0;
 }
 
 

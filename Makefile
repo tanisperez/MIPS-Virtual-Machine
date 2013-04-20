@@ -8,14 +8,8 @@ debug:
 	$(MAKE) debug --directory=src/mips/
 	@echo BUILD SUCCESSFULL! [DEBUG MODE]
 
-valgrind:
-	$(MAKE) valgrind --directory=src/mas/
-	$(MAKE) valgrind --directory=src/mips/
-	@echo BUILD SUCCESSFULL! [VALGRIND MODE]
-
-progs:
-	@echo yeah
-	$(MAKE) --directory=programs/
+programs:
+	$(MAKE) --directory=examples/
 
 clean:
 	rm -f bin/mips
@@ -26,4 +20,12 @@ clean:
 	rm -f bin/*.exe
 	$(MAKE) clean --directory=src/mas/
 	$(MAKE) clean --directory=src/mips/
-	$(MAKE) clean --directory=programs/
+	$(MAKE) clean --directory=examples/
+
+install:
+	cp bin/mas /usr/bin/mas
+	cp bin/mips /usr/bin/mips
+
+uninstall:
+	rm -f /usr/bin/mas
+	rm -f /usr/bin/mips

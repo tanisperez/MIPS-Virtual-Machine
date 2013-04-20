@@ -20,17 +20,56 @@
  */
 
 #include <stdio.h>
+#include <getopt.h>
 #include "definiciones.h"
 
-/* Añadir parámetro opcional de Debugging */
+extern int clean_mode; // En vm.c
+
+/*
+ * Función imprimirUso.
+ * Muestra las opciones que tiene el ensamblador en
+ * línea de comandos.
+*/
+void imprimirUso()
+{
+	printf("Uso: mips fichero [opciones]\n");
+	printf("\t-h --help\tMuestra la ayuda\n");
+	printf("\t-c --clean\tEjecuta el programa sin mostrar información de estado\n");
+	printf("\t-v --version\tMuestra la versión\n");
+}
+
+
 int main(int argc, char * argv[])
 {
-	printf("MIPS Virtual Machine - version %.2f\n\n", MIPS_VER);
+	int accion = 0;
+	char * entrada = NULL;
 
-	if (argc > 1)
-		interpretarArchivo(argv[1]);
+	while ((accion = getopt (argc, argv, "hcv")) != -1)
+	{
+		switch (accion)
+		{
+			case 'h':
+				imprimirUso();
+				return 1;
+			case 'v':
+				printf("MIPS Virtual Machine - version %.2f\n", MIPS_VER);
+				return 1;
+			case 'c':
+				clean_mode = 1;
+				break;
+			case '?':
+				imprimirUso();
+				return 1;
+		}
+	}
+	
+	if (optind < argc)
+		entrada = argv[optind];
+
+	if (entrada != NULL)
+		interpretarArchivo(entrada);
 	else
-		printf("Uso: mips file.bin\n");
+		imprimirUso();
 
 	return 0;
 }

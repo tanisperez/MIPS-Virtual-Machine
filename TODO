@@ -1,2 +1,2 @@
-- Crear una lista "genérica" y hacer extensiones.
-- Manual de mas y mips.
+- Implementar las instrucciones de la FPU.
+- Implementar la pila en la máquina virtual.

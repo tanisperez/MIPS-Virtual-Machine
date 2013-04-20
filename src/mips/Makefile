@@ -25,8 +25,5 @@ fpu.o: fpu.c fpu.h
 debug:
 	$(CC) $(PARAMS) -g -DDEBUG $(SOURCES) -o ../../bin/mips
 
-valgrind:
-	$(CC) $(PARAMS) -g $(SOURCES) -o ../../bin/mips
-
 clean:
 	rm -f *.o

@@ -53,11 +53,12 @@ void read_integer(uint32_t * i)
 {
 	char buff[100];
 
-	if (fgets(buff, 100, stdin) != NULL && i != NULL)
+	if (i != NULL && fgets(buff, 100, stdin) != NULL)
 	{
-		buff[strlen(buff) - 1] = '\0';
-		if (sscanf(buff, "%d", i) != 1)
-			printf("Error! \"%s\" no es un número entero!\n", buff); //¿Exception?
+		buff[99] = '\0';
+		if (sscanf(buff, "0x%x", i) != 1)
+			if (sscanf(buff, "%d", i) != 1)
+				printf("Error! \"%s\" no es un número entero!\n", buff); //¿Exception?
 	}
 	else
 		printf("syscall read_integer error! Error en la entrada de datos!\n");

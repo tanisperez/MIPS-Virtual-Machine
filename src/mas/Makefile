@@ -34,8 +34,5 @@ variables.o: variables.c variables.h
 debug:
 	$(CC) $(PARAMS) -g -DDEBUG $(SOURCES) -o ../../bin/mas
 
-valgrind:
-	$(CC) $(PARAMS) -g $(SOURCES) -o ../../bin/mas
-
 clean:
 	rm *.o

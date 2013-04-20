@@ -2,6 +2,7 @@
 	texto1: .asciiz "Serie de Fibonacci!\n"
 	texto2: .asciiz "Introduce el número de la serie que deseas calcular (n < 49): "
 	texto3: .asciiz "Fib(n) = "
+	salto_linea:	.asciiz	"\n"
 
 .text
 inicio:
@@ -51,3 +52,9 @@ resultado:
 	xor $a0, $a0, $a0
 	addi $a0, $t2, 0 # a0 = t2
 	syscall # print_integer
+
+	xor $v0, $v0, $v0
+	addi $v0, $v0, 4 # v0 = 4
+	lui $a0, salto_linea
+	ori $a0, $a0, salto_linea # a0 = [salto_linea]
+	syscall # print_string

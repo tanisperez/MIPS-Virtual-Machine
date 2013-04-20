@@ -143,6 +143,10 @@ registro_t listaRegistros[REG_COUNT] = {
 	{"$ra", 	31,	&cpu.registros.ra}
 	};
 
+/* Si está activada la variable, la ejecución del programa
+ * se realiza en modo "limpio" sin mostrar los registros de estado.
+ */
+int clean_mode = 0;
 
 /*
  * Función sigintEvent.
@@ -249,7 +253,8 @@ void execute()
 		interpretarInstruccion(opcode);
 	}
 
-	visualizarCPUInfo(cpu);
+	if (!clean_mode)
+		visualizarCPUInfo(cpu);
 }
 
 

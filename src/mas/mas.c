@@ -34,6 +34,7 @@ void imprimirUso()
 	printf("Uso: mas fichero [opciones]\n");
 	printf("\t-h --help\tMuestra la ayuda\n");
 	printf("\t-o --output\tEspecifica el nombre del fichero de salida\n");
+	printf("\t-v --version\tMuestra la versión\n");
 }
 
 /*
@@ -44,16 +45,16 @@ int main(int argc, char * argv[])
 	int accion = 0;
 	char * entrada = NULL;
 	char * salida = "a.out";
-
-	printf("Mips ASsembler version %.2f\n\n", MAS_VER);
-
 	
-	while ((accion = getopt (argc, argv, "ho:")) != -1)
+	while ((accion = getopt (argc, argv, "hvo:")) != -1)
 	{
 		switch (accion)
 		{
 			case 'h':
 				imprimirUso();
+				return 1;
+			case 'v':
+				printf("Mips ASsembler version %.2f\n", MAS_VER);
 				return 1;
 			case 'o':
 				salida = optarg;
