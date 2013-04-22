@@ -6,6 +6,7 @@ all:
 	$(MAS) hello.asm -o hello
 	$(MAS) suma.asm -o suma
 	$(MAS) negativo.asm -o negativo
+	$(MAS) insercion.asm -o insercion
 
 clean:
 	rm -f fibonacci
@@ -13,3 +14,4 @@ clean:
 	rm -f hello
 	rm -f suma
 	rm -f negativo
+	rm -f insercion

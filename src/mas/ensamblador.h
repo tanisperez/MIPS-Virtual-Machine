@@ -22,9 +22,9 @@
 
 #include <elf.h>
 
-#define MAX_LINEA 100
+#define MAX_LINEA 1000
 
-#define MAX_TROZOS 10
+#define MAX_TROZOS 100
 #define TROZOS_UTILES 4
 
 #define MAX_FALLOS 7

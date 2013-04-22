@@ -304,7 +304,7 @@ void bne(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 void lb(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
 	if ((*rs) + offset >= 0 && (*rs) + offset < cpu.memory_size)
-		*rt = cpu.memory[(*rs) + offset];
+		*rt = (int32_t)cpu.memory[(*rs) + offset];
 	else
 		fatal_error("Operación lb. Violación de segmento!\n");
 }
@@ -316,8 +316,13 @@ void lui(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset
 
 void lw(int32_t * rs, int32_t * rt, int32_t * rd, uint8_t shamt, int16_t offset, uint32_t direction)
 {
+	int16_t temp = 0;
+
 	if ((*rs) + (offset * sizeof(uint16_t)) >= 0 && (*rs) + (offset * sizeof(uint16_t)) < cpu.memory_size - 1)
-		memcpy(rt, &cpu.memory[(*rs) + (offset * sizeof(uint16_t))], sizeof(uint16_t));
+	{
+		memcpy(&temp, &cpu.memory[(*rs) + (offset * sizeof(uint16_t))], sizeof(uint16_t));
+		*rt = (int32_t)temp;
+	}
 	else
 		fatal_error("Operación lw. Violación de segmento!\n");
 }
