@@ -1,8 +1,118 @@
 MIPS Virtual Machine
 
-This program is Free Software under the GNU License, see the file license for more information. 
+- Descripción:
 
-Author: Estanislao Ramón Pérez Nartallo
-email: tanisperez@gmail.com
+El proyecto se compone de dos programas: un ensamblador y un intérprete (o máquina virtual).
+El ensamblador permite generar progamas binarios para la arquitectura MIPS R2000/R3000 encapsulados
+en un archivo con formato elf. La máquina virtual carga las secciones de estos archivos en memoria y va
+interpretando el programa instrucción a instrucción.
 
-http://www.concursosoftwarelibre.org/1213/proyectos/26
+Mi objetivo es llegar a conseguir el 100% de compatibilidad binaria, que al crear un programa con el ensamblador
+este se pudiera ejecutar de forma nativa en un procesador MIPS con Linux. También tenía pensado portar el proyecto
+a otros Sistemas Operativos y arquitecturas.
+
+Como objetivo futuro, había pensado en emplear GCC (una versión compilada, no instalada desde los repositorios de paquetes)
+para traducir programas en C a ensamblador MIPS y luego ensamblarlos con mi programa.
+
+- Árbol de directorios:
+
+khronos@Ubuntu-Acer:~/Dropbox/MIPS-Virtual-Machine$ tree
+.
+├── bin
+├── doc
+│   ├── Instalación.pdf
+│   └── MIPS Virtual Machine.pdf
+├── examples
+│   ├── fibonacci.asm
+│   ├── hello.asm
+│   ├── insercion.asm
+│   ├── Makefile
+│   ├── negativo.asm
+│   ├── par.asm
+│   └── suma.asm
+├── license
+├── Makefile
+├── R2000
+├── README
+├── src
+│   ├── mas
+│   │   ├── cadenas.c
+│   │   ├── cadenas.h
+│   │   ├── dataBuffer.c
+│   │   ├── dataBuffer.h
+│   │   ├── definiciones.h
+│   │   ├── ensamblador.c
+│   │   ├── ensamblador.h
+│   │   ├── Makefile
+│   │   ├── mas.c
+│   │   ├── mips.c
+│   │   ├── mips.h
+│   │   ├── programBuffer.c
+│   │   ├── programBuffer.h
+│   │   ├── saltos.c
+│   │   ├── saltos.h
+│   │   ├── variables.c
+│   │   └── variables.h
+│   └── mips
+│       ├── alu.c
+│       ├── alu.h
+│       ├── definiciones.h
+│       ├── fpu.c
+│       ├── fpu.h
+│       ├── main.c
+│       ├── Makefile
+│       ├── syscalls.c
+│       ├── syscalls.h
+│       ├── vm.c
+│       └── vm.h
+└── TODO
+
+La carpeta bin/ se genera automáticamente al compilar el proyecto, en ella van a estar los programas mas (Mips ASsembler) y mips (el intérprete).
+
+La carpeta doc/ contiene la documentación del proyecto.
+
+En el directorio examples/ hay algunos programas de prueba hechos en lenguaje ensamblador, acompañados de un Makefile que facilita la compilación. Para ejecutarlos basta con:
+
+khronos@Ubuntu-Acer:~/Dropbox/MIPS-Virtual-Machine/examples$ ../bin/mips -c insercion
+Algoritmo de ordenación por Inserción!
+Vector desordenado: 4, 9, 13, -5, 18, 32, 45, -14, 882;
+Vector ordenado: 882, 45, 32, 18, 13, 9, 4, -5, -14;
+
+El parámetro -c no muestra el estado de los registros, memoria, etc..
+
+El Makefile situado en el directorio raiz, permite compilar de forma recursiva los dos proyectos y los programas de prueba.
+
+En la carpeta src/ encontramos los dos programas src/mips y src/mas con todo su código fuente.
+
+
+- Obtener el proyecto.
+
+Para obtener el proyecto, podemos hacerlo de dos formas:
+ - Acceder a https://github.com/tanisperez/MIPS-Virtual-Machine y descargar el código fuente en formato .zip
+ - Utilizando el comando git: git clone https://github.com/tanisperez/MIPS-Virtual-Machine.
+
+Para compilar el proyecto hay que utilizar alguna distribución de GNU/Linux y tener instalado GCC. No requiere ninguna librería
+adicional, tan sólo utiliza las librerías libc y POSIX.
+El proyecto se compila con un simple make en el directorio raiz del proyecto y se puede instalar utilizando make install (con permisos de administrador).
+
+Hay documentación sobre este proceso en doc/Instalación.pdf
+
+- Requisitos del proyecto.
+
+Básicamente están explicados en el punto anterior y en la documentación.
+
+- Instalación.
+
+khronos@Ubuntu-Acer:~/Dropbox/MIPS-Virtual-Machine$ make
+khronos@Ubuntu-Acer:~/Dropbox/MIPS-Virtual-Machine$ sudo make install
+cp bin/mas /usr/bin/mas
+cp bin/mips /usr/bin/mips
+
+Para desinstalar el proyecto basta con un: sudo make uninstall.
+
+- Información adicional:
+
+Estuve realizando posts en mi blog del proyecto sobre los avances que hacía:
+http://mipsvirtualmachine.wordpress.com/
+  
+

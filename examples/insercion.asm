@@ -96,11 +96,7 @@
 		jal print_string
 
 		# Ordenación por inserción
-
-		# t1 = i
-		# t2 = j
-		# t4 = x
-
+		
 		xor $t1, $t1, $t1
 		addi $t1, $t1, 1
 
